@@ -15,6 +15,7 @@ void Game::init() {
     glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
     window = glfwCreateWindow(1280, 720, "game", nullptr, nullptr);
     glfwMakeContextCurrent(window);
+    glfwSwapInterval(1); // vsync
 
     // Initialize GLEW
     glewExperimental = true;
@@ -77,7 +78,6 @@ void Game::init() {
     // Unbind the VAO
     // glBindVertexArray(0);
 
-    //shape.setPixel(1,0,0,Pixel(255,255,255));
     sendVoxelShapeToFragmentShader(shape);
 
     //Pixel pixel = shape.getPixel(2,2,2);
@@ -127,9 +127,99 @@ void Game::createFBO() {
 }
 
 void Game::loop() {
+    bool toggle = false;
+    bool pressed1 = false;
+    bool pressed2 = false;
+    bool pressed3 = false;
+    bool go = false;
+    bool reverse = false;
+    int num = 0;
+    int ct = 0;
     while (!glfwWindowShouldClose(window)) {
         glClear(GL_COLOR_BUFFER_BIT);
         render();
+
+        if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS)
+        {
+            if (!pressed1)
+            {
+                toggle = !toggle;
+                pressed1 = true;
+            }
+        }
+        if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_RELEASE)
+        {
+            pressed1 = false;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        {
+            if (!pressed2)
+            {
+                go = true;
+                pressed2 = true;
+            }
+        }
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_RELEASE)
+        {
+            pressed2 = false;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        {
+            if (!pressed3)
+            {
+                reverse = true;
+                pressed3 = true;
+            }
+        }
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_RELEASE)
+        {
+            pressed3 = false;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+        {
+            int z = num / (shape.xSize * shape.ySize);
+            int y = (num - z * shape.xSize * shape.ySize) / shape.xSize;
+            int x = num % shape.xSize;
+            std::cout << x << " " << y << " " << z << std::endl;
+        }
+
+        if (reverse)
+        {
+            int z = num / (shape.xSize * shape.ySize);
+            int y = (num - z * shape.xSize * shape.ySize) / shape.xSize;
+            int x = num % shape.xSize;
+            shape.setPixel(x, y, z, Pixel(255,0,0));
+            num -= 2;
+            go = true;
+            reverse = false;
+        }
+        ct++;
+        if (ct > 1 && glfwGetKey(window, GLFW_KEY_SPACE) != GLFW_PRESS && toggle || go)
+        {
+            if (num > shape.xSize * shape.zSize * shape.ySize - 2)
+                num = 0;
+
+            int z = num / (shape.xSize * shape.ySize);
+            int y = (num - z * shape.xSize * shape.ySize) / shape.xSize;
+            int x = num % shape.xSize;
+            shape.setPixel(x, y, z, Pixel(255,0,0));
+            num++;
+            z = num / (shape.xSize * shape.ySize);
+            y = (num - z * shape.xSize * shape.ySize) / shape.xSize;
+            x = num % shape.xSize;
+            shape.setPixel(x, y, z, Pixel(0,255,0));
+            glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, shape.xSize, shape.ySize, shape.zSize, GL_RGB, GL_UNSIGNED_BYTE, shape.data.data());
+            ct = 0;
+            go = false;
+        }
+
+
+
+
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }

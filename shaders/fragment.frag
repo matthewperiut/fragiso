@@ -51,10 +51,16 @@ void main()
     //FragColor = getColor(vec3(gl_FragCoord.x, 0, gl_FragCoord.y));
     */
 
-    color = getColor(vec3(mod(gl_FragCoord.x,voxelShapeSize.x),mod(gl_FragCoord.y,voxelShapeSize.y),trunc(gl_FragCoord.x/voxelShapeSize.z)));
-    //color = getColor(vec3(gl_FragCoord.x,gl_FragCoord.y,0.f));
-    if (color == blank)
-            discard;
+    //int x = int(gl_FragCoord.x);
+    //int y = int(gl_FragCoord.y);
+    //int z = 0;
+
+    int x = int(gl_FragCoord.x) % int(voxelShapeSize.x);
+    int y = int(gl_FragCoord.y) % int(voxelShapeSize.y);
+    int z = int(gl_FragCoord.x) / int(voxelShapeSize.x) + int(gl_FragCoord.y) / int(voxelShapeSize.y);
+
+    color = getColor(vec3(x, y, z));
+
     FragColor = color;
 }
 
