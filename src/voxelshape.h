@@ -1,29 +1,30 @@
+#include <vector>
+
 class Pixel {
 public:
-    char r, g, b;
-    Pixel(char r, char g, char b) : r(r), g(g), b(b) {}
+    uint8_t r, g, b;
+    Pixel(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b) {}
     Pixel() : r(0), g(0), b(0) {}
 };
 
 class VoxelShape {
 public:
     int xSize, ySize, zSize;
-    Pixel* data;
-    VoxelShape(int x, int y, int z) : xSize(x), ySize(y), zSize(z)
+    std::vector<Pixel> data;
+    VoxelShape(int x, int y, int z) : xSize(x), ySize(y), zSize(z), data(x*y*z)
     {
-        data = new Pixel[x * y * z];
         for (int i = 0; i < x; i++) {
             for (int j = 0; j < y; j++) {
                 for (int k = 0; k < z; k++) {
-                    char r = (i * 255 / x);
-                    char g = (j * 255 / y);
-                    char b = (k * 255 / z);
+                    uint8_t r = 255;
+                    uint8_t g = 0;
+                    uint8_t b = 0;
                     setPixel(i, j, k, Pixel(r, g, b));
                 }
             }
         }
     }
-    void setPixel(int x, int y, int z, Pixel pixel) const
+    void setPixel(int x, int y, int z, Pixel pixel)
     {
         data[x + y * this->xSize + z * this->xSize * this->ySize] = pixel;
     }

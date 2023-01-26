@@ -52,6 +52,7 @@ void main()
     */
 
     color = getColor(vec3(mod(gl_FragCoord.x,voxelShapeSize.x),mod(gl_FragCoord.y,voxelShapeSize.y),trunc(gl_FragCoord.x/voxelShapeSize.z)));
+    //color = getColor(vec3(gl_FragCoord.x,gl_FragCoord.y,0.f));
     if (color == blank)
             discard;
     FragColor = color;

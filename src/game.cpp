@@ -1,4 +1,5 @@
 #include "game.h"
+#include "helpful.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -76,10 +77,21 @@ void Game::init() {
     // Unbind the VAO
     // glBindVertexArray(0);
 
-    shape.setPixel(1,0,0,Pixel(255,0,0));
+    //shape.setPixel(1,0,0,Pixel(255,255,255));
     sendVoxelShapeToFragmentShader(shape);
 
+    //Pixel pixel = shape.getPixel(2,2,2);
+    //std::cout << "Pixel " << int(pixel.r) << " " << int(pixel.g) << " " << int(pixel.b) << std::endl;
+
     createFBO();
+
+    std::cout << pixelProgram << std::endl;
+
+    if(glewIsSupported("GL_ARB_debug_output"))
+    {
+        glDebugMessageCallback(openglCallbackFunction, nullptr);
+        glEnable(GL_DEBUG_OUTPUT);
+    }
 }
 
 void Game::createFBO() {
@@ -245,46 +257,27 @@ void sendUniform3iSafely(GLuint program, std::string name, int x, int y, int z)
 
 void Game::sendVoxelShapeToFragmentShader(VoxelShape& voxelShape) const {
     sendUniform3iSafely(pixelProgram, "voxelShapeSize", voxelShape.xSize, voxelShape.ySize, voxelShape.zSize);
-    //sendUniform3iSafely(pixelProgram, "voxelPosition", voxelShape.xPos, voxelShape.yPos, voxelShape.zPos);
 
-    /*
+    // Create the 3D texture
     GLuint textureID;
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_3D, textureID);
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, shape.xSize, shape.ySize, shape.zSize, 0, GL_RGB, GL_UNSIGNED_BYTE, shape.data);
+
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, shape.xSize, shape.ySize, shape.zSize, 0, GL_RGB, GL_UNSIGNED_BYTE, shape.data.data());
+
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
-    GLuint location = glGetUniformLocation(pixelProgram, "voxelShape");
-    glUniform1i(location, 0);
-    glActiveTexture(GL_TEXTURE0);
+
+    GLuint textureUnit = 0;
+    glActiveTexture(GL_TEXTURE0 + textureUnit);
     glBindTexture(GL_TEXTURE_3D, textureID);
-     */
-    // Create the 3D texture
-    GLuint voxelShapeTex;
-    glGenTextures(1, &voxelShapeTex);
-    glBindTexture(GL_TEXTURE_3D, voxelShapeTex);
-
-    // Allocate storage for the texture
-    glTexStorage3D(GL_TEXTURE_3D, 1, GL_RGB8, voxelShape.xSize, voxelShape.ySize, voxelShape.zSize);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
-
-    // Copy the pixel data from the VoxelShape into the texture
-    glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, voxelShape.xSize, voxelShape.ySize, voxelShape.zSize, GL_RGB, GL_UNSIGNED_BYTE, voxelShape.data);
 
     // Bind the texture to a uniform sampler in the fragment shader
     GLint voxelShapeUniform = glGetUniformLocation(pixelProgram, "voxelShape");
-    glUniform1i(voxelShapeUniform, 0);
-
-    // Bind the texture to texture unit 0
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_3D, voxelShapeTex);
+    glUniform1i(voxelShapeUniform, textureUnit);
 }
 
 void Game::validateProgram(GLuint programToValidate)
