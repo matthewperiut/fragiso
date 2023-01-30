@@ -1,36 +1,45 @@
 #include <vector>
 
-class Pixel {
-public:
-    uint8_t r, g, b;
-    Pixel(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b) {}
-    Pixel() : r(0), g(0), b(0) {}
+struct RGBA {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+    uint8_t a;
+
+    RGBA() : r(0), g(0), b(0), a(255) {}
+    RGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a) : r(r), g(g), b(b), a(a) {}
+    RGBA(uint8_t r, uint8_t g, uint8_t b) : r(r), g(g), b(b), a(255) {}
 };
 
 class VoxelShape {
 public:
-    int xSize, ySize, zSize;
-    std::vector<Pixel> data;
-    VoxelShape(int x, int y, int z) : xSize(x), ySize(y), zSize(z), data(x*y*z)
-    {
-        for (int i = 0; i < x; i++) {
-            for (int j = 0; j < y; j++) {
-                for (int k = 0; k < z; k++) {
-                    uint8_t r = 255;
-                    uint8_t g = 0;
-                    uint8_t b = 0;
-                    setPixel(i, j, k, Pixel(r, g, b));
-                }
-            }
+    VoxelShape(int xSize, int ySize, int zSize)
+            : xSize(xSize), ySize(ySize), zSize(zSize) {
+        data = new RGBA[xSize * ySize * zSize];
+        for (int i = 0; i < xSize * ySize * zSize; ++i) {
+            data[i] = RGBA{ 0, 0, 0, 0 };
         }
     }
-    void setPixel(int x, int y, int z, Pixel pixel)
-    {
-        data[x + y * this->xSize + z * this->xSize * this->ySize] = pixel;
+
+    ~VoxelShape() {
+        delete[] data;
     }
 
-    Pixel getPixel(int x, int y, int z) const
-    {
-        return data[x + y * this->xSize + z * this->xSize * this->ySize];
+    void setPixel(int x, int y, int z, RGBA rgba) {
+        data[index(x, y, z)] = rgba;
+    }
+
+    RGBA getPixel(int x, int y, int z) {
+        return data[index(x, y, z)];
+    }
+
+public:
+    int xSize;
+    int ySize;
+    int zSize;
+    RGBA* data;
+
+    int index(int x, int y, int z) {
+        return x + y * xSize + z * xSize * ySize;
     }
 };

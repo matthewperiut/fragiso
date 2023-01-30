@@ -27,7 +27,7 @@ private:
     GLuint fbo_handle;
     GLuint fbo_texture;
 
-    VoxelShape shape = VoxelShape(11,11,11);
+    VoxelShape shape = VoxelShape(10,10,10);
 
     void createFBO();
 };

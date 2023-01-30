@@ -55,9 +55,9 @@ void main()
     //int y = int(gl_FragCoord.y);
     //int z = 0;
 
-    int x = int(gl_FragCoord.x) % int(voxelShapeSize.x);
-    int y = int(gl_FragCoord.y) % int(voxelShapeSize.y);
-    int z = int(gl_FragCoord.x) / int(voxelShapeSize.x) + int(gl_FragCoord.y) / int(voxelShapeSize.y);
+    float x = mod(gl_FragCoord.x, voxelShapeSize.x);
+    float y = mod(gl_FragCoord.y, voxelShapeSize.y);
+    float z = gl_FragCoord.x /voxelShapeSize.x + gl_FragCoord.y / voxelShapeSize.y;
 
     color = getColor(vec3(x, y, z));
 

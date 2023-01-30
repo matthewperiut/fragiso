@@ -191,13 +191,13 @@ void Game::loop() {
             int z = num / (shape.xSize * shape.ySize);
             int y = (num - z * shape.xSize * shape.ySize) / shape.xSize;
             int x = num % shape.xSize;
-            shape.setPixel(x, y, z, Pixel(255,0,0));
+            shape.setPixel(x, y, z, RGBA(255,0,0));
             num -= 2;
             go = true;
             reverse = false;
         }
         ct++;
-        if (ct > 1 && glfwGetKey(window, GLFW_KEY_SPACE) != GLFW_PRESS && toggle || go)
+        if (ct > 3 && glfwGetKey(window, GLFW_KEY_SPACE) != GLFW_PRESS && toggle || go)
         {
             if (num > shape.xSize * shape.zSize * shape.ySize - 2)
                 num = 0;
@@ -205,13 +205,13 @@ void Game::loop() {
             int z = num / (shape.xSize * shape.ySize);
             int y = (num - z * shape.xSize * shape.ySize) / shape.xSize;
             int x = num % shape.xSize;
-            shape.setPixel(x, y, z, Pixel(255,0,0));
+            shape.setPixel(x, y, z, RGBA(255,0,0));
             num++;
             z = num / (shape.xSize * shape.ySize);
             y = (num - z * shape.xSize * shape.ySize) / shape.xSize;
             x = num % shape.xSize;
-            shape.setPixel(x, y, z, Pixel(0,255,0));
-            glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, shape.xSize, shape.ySize, shape.zSize, GL_RGB, GL_UNSIGNED_BYTE, shape.data.data());
+            shape.setPixel(x, y, z, RGBA(0,255,0));
+            glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, shape.xSize, shape.ySize, shape.zSize, GL_RGBA, GL_UNSIGNED_BYTE, shape.data);
             ct = 0;
             go = false;
         }
@@ -353,7 +353,7 @@ void Game::sendVoxelShapeToFragmentShader(VoxelShape& voxelShape) const {
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_3D, textureID);
 
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, shape.xSize, shape.ySize, shape.zSize, 0, GL_RGB, GL_UNSIGNED_BYTE, shape.data.data());
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, shape.xSize, shape.ySize, shape.zSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, shape.data);
 
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
