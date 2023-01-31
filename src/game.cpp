@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <cmath>
 
 void Game::init() {
     // Initialize GLFW and create a window
@@ -31,9 +32,12 @@ void Game::init() {
     std::cout << "3D Texture Size " << size << "x" << size << std::endl;
 
     int max_layers;
-
     glGetIntegerv(GL_MAX_ARRAY_TEXTURE_LAYERS, &max_layers);
     std::cout << "Max Array Texture Layers " << max_layers << std::endl;
+
+    int max_samplers;
+    glGetIntegerv(GL_MAX_COMBINED_TEXTURE_IMAGE_UNITS, &max_samplers);
+    std::cout << "Max Samplers " << max_samplers << std::endl;
 
     // Set the clear color to fill the screen
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -77,6 +81,24 @@ void Game::init() {
 
     // Unbind the VAO
     // glBindVertexArray(0);
+
+    for (int x = 0; x < shape.xSize; x++)
+    {
+        for (int y = 0; y < shape.ySize; y++)
+        {
+            for (int z = 0; z < shape.zSize; z++)
+            {
+                shape.setPixel(x,y,0, RGBA(0,0,255));
+                shape.setPixel(0,y,z, RGBA(0,255,0));
+                shape.setPixel(x,0,z, RGBA(255,0,0));
+
+                shape.setPixel(x,y,shape.zSize-1, RGBA(0,0,255));
+                shape.setPixel(shape.xSize-1,y,z, RGBA(0,255,0));
+                shape.setPixel(x,shape.ySize-1,z, RGBA(255,0,0));
+            }
+        }
+    }
+
 
     sendVoxelShapeToFragmentShader(shape);
 
@@ -124,6 +146,7 @@ void Game::createFBO() {
     if (status != GL_FRAMEBUFFER_COMPLETE) {
         // Handle FBO creation error
     }
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void Game::loop() {
@@ -135,94 +158,64 @@ void Game::loop() {
     bool reverse = false;
     int num = 0;
     int ct = 0;
+
+    auto start_time = std::chrono::high_resolution_clock::now();
     while (!glfwWindowShouldClose(window)) {
-        glClear(GL_COLOR_BUFFER_BIT);
+
         render();
 
-        if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_PRESS)
-        {
-            if (!pressed1)
-            {
-                toggle = !toggle;
-                pressed1 = true;
-            }
-        }
-        if (glfwGetKey(window, GLFW_KEY_ENTER) == GLFW_RELEASE)
-        {
-            pressed1 = false;
-        }
+        // going to be useful
+        // glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, shape.xSize, shape.ySize, shape.zSize, GL_RGBA, GL_UNSIGNED_BYTE, shape.data);
 
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         {
-            if (!pressed2)
-            {
-                go = true;
-                pressed2 = true;
-            }
+            camera.y += 1;
         }
-        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_RELEASE)
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         {
-            pressed2 = false;
+            camera.y -= 1;
         }
-
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         {
-            if (!pressed3)
-            {
-                reverse = true;
-                pressed3 = true;
-            }
+            camera.x -= 1;
         }
-        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_RELEASE)
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         {
-            pressed3 = false;
-        }
-
-        if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
-        {
-            int z = num / (shape.xSize * shape.ySize);
-            int y = (num - z * shape.xSize * shape.ySize) / shape.xSize;
-            int x = num % shape.xSize;
-            std::cout << x << " " << y << " " << z << std::endl;
-        }
-
-        if (reverse)
-        {
-            int z = num / (shape.xSize * shape.ySize);
-            int y = (num - z * shape.xSize * shape.ySize) / shape.xSize;
-            int x = num % shape.xSize;
-            shape.setPixel(x, y, z, RGBA(255,0,0));
-            num -= 2;
-            go = true;
-            reverse = false;
-        }
-        ct++;
-        if (ct > 3 && glfwGetKey(window, GLFW_KEY_SPACE) != GLFW_PRESS && toggle || go)
-        {
-            if (num > shape.xSize * shape.zSize * shape.ySize - 2)
-                num = 0;
-
-            int z = num / (shape.xSize * shape.ySize);
-            int y = (num - z * shape.xSize * shape.ySize) / shape.xSize;
-            int x = num % shape.xSize;
-            shape.setPixel(x, y, z, RGBA(255,0,0));
-            num++;
-            z = num / (shape.xSize * shape.ySize);
-            y = (num - z * shape.xSize * shape.ySize) / shape.xSize;
-            x = num % shape.xSize;
-            shape.setPixel(x, y, z, RGBA(0,255,0));
-            glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, shape.xSize, shape.ySize, shape.zSize, GL_RGBA, GL_UNSIGNED_BYTE, shape.data);
-            ct = 0;
-            go = false;
+            camera.x += 1;
         }
 
 
-
-
-
+        sendCamera();
         glfwSwapBuffers(window);
         glfwPollEvents();
+        //fps();
     }
+}
+
+void Game::fps()
+{
+    static std::vector<double> frame_times;
+    static auto start = std::chrono::high_resolution_clock::now();
+
+
+    auto end = std::chrono::high_resolution_clock::now();
+    double elapsed_time = std::chrono::duration<double>(end - start).count();
+    frame_times.push_back(elapsed_time);
+
+    if (frame_times.size() >= 100) {
+        double sum = 0;
+        for (auto t : frame_times) sum += t;
+        double average_time = sum / frame_times.size();
+        double std_dev = 0;
+        for (auto t : frame_times) std_dev += (t - average_time) * (t - average_time);
+        std_dev = sqrt(std_dev / frame_times.size());
+
+        double fps = 1 / average_time;
+        std::cout << "FPS: " << fps << " +/- " << std_dev * fps << std::endl;
+        frame_times.clear();
+    }
+
+    start = end;
 }
 
 void Game::render() {
@@ -231,16 +224,22 @@ void Game::render() {
 
     glBindVertexArray(VAO);
 
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo_handle);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, scale*fbo_handle);
+    glClear(GL_COLOR_BUFFER_BIT);
+
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo_handle);
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-    glBlitFramebuffer(0, 0, 256, 144,
-                      0, 0, 1280, 720,
-                      GL_COLOR_BUFFER_BIT,
-                      GL_NEAREST);
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    if (scale)
+    {
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo_handle);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+        glBlitFramebuffer(0, 0, 256, 144,
+                          0, 0, 1280, 720,
+                          GL_COLOR_BUFFER_BIT,
+                          GL_NEAREST);
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+    }
+
     glBindVertexArray(0);
 }
 
@@ -343,6 +342,24 @@ void sendUniform3iSafely(GLuint program, std::string name, int x, int y, int z)
             std::cout << "(" + name + ") Error: " << error << std::endl;
         }
     }
+}
+
+void Game::sendCamera()
+{
+    glUseProgram(pixelProgram);
+    GLuint location = glGetUniformLocation(pixelProgram, "cameraPosition");
+
+    if(location == -1)
+        std::cout << "cameraPosition not found in shader" << std::endl;
+    else
+    {
+        glUniform2f(location, camera.x, camera.y);
+        GLenum error = glGetError();
+        if (error != GL_NO_ERROR) {
+            std::cout << "(cameraPosition) Error: " << error << std::endl;
+        }
+    }
+
 }
 
 void Game::sendVoxelShapeToFragmentShader(VoxelShape& voxelShape) const {

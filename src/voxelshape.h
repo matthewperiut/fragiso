@@ -17,7 +17,7 @@ public:
             : xSize(xSize), ySize(ySize), zSize(zSize) {
         data = new RGBA[xSize * ySize * zSize];
         for (int i = 0; i < xSize * ySize * zSize; ++i) {
-            data[i] = RGBA{ 0, 0, 0, 0 };
+            data[i] = RGBA{ 255, 0, 0, 255 };
         }
     }
 

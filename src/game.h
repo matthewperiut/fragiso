@@ -21,13 +21,26 @@ public:
 
 private:
     GLFWwindow* window;
+    int width = 1280;
+    int height = 720;
     GLuint pixelProgram;
     GLuint scaleProgram;
 
+    bool scale = true;
     GLuint fbo_handle;
     GLuint fbo_texture;
 
     VoxelShape shape = VoxelShape(10,10,10);
 
     void createFBO();
+
+    void fps();
+
+    struct Camera
+    {
+        // We will forget about the decimal values until we implement the scale program which will implement decimal camera movement
+        double x, y;
+    };
+    Camera camera{ 77, 47 };
+    void sendCamera();
 };
