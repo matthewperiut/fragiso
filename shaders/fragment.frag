@@ -28,15 +28,15 @@ void main()
 {
     vec2 coord = gl_FragCoord.xy - cameraPosition;
 
-    rayPosition = vec3(coord,50);
+    rayPosition = vec3(coord,voxelShapeSize.z*2);
     rayPosition = vec3(rayPosition.x - int(coord/2), rayPosition.y, rayPosition.z- int(coord/2));
 
     int steps = 0;
     while (rayPosition.z > 0)
     {
-        rayPosition.z --;
-        rayPosition.y --;
-        rayPosition.x --;
+        rayPosition.z -= 0.4;
+        rayPosition.y -= 0.4;
+        rayPosition.x -= 0.4;
         color = getColor(rayPosition);
         if (color != blank)
         {

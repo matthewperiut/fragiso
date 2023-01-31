@@ -1,5 +1,6 @@
 #include "game.h"
 #include "helpful.h"
+#include <chrono>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -169,19 +170,19 @@ void Game::loop() {
 
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         {
-            camera.y += 1;
+            camera.y -= 1;
         }
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         {
-            camera.y -= 1;
+            camera.y += 1;
         }
         if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         {
-            camera.x -= 1;
+            camera.x += 1;
         }
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         {
-            camera.x += 1;
+            camera.x -= 1;
         }
 
 
