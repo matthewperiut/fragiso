@@ -20,7 +20,7 @@ vec4 getColor(vec3 texCoords)
         }
     }
 
-    return texture(voxelShape, (texCoords)/voxelShapeSize);
+    return texture(voxelShape, (texCoords + vec3(0,0,0.5))/voxelShapeSize);
 }
 
 vec3 rayPosition;
@@ -28,15 +28,15 @@ void main()
 {
     vec2 coord = gl_FragCoord.xy - cameraPosition;
 
-    rayPosition = vec3(coord,voxelShapeSize.z*2);
+    rayPosition = vec3(coord,50);
     rayPosition = vec3(rayPosition.x - int(coord/2), rayPosition.y, rayPosition.z- int(coord/2));
 
     int steps = 0;
     while (rayPosition.z > 0)
     {
-        rayPosition.z -= 0.4;
-        rayPosition.y -= 0.4;
-        rayPosition.x -= 0.4;
+        rayPosition.z --;
+        rayPosition.y --;
+        rayPosition.x --;
         color = getColor(rayPosition);
         if (color != blank)
         {
@@ -46,7 +46,7 @@ void main()
     }
 
     if (steps > 48)
-            discard;
+    discard;
     if (color == blank)
-            discard;
+    discard;
 }
