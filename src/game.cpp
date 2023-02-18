@@ -7,6 +7,32 @@
 #include <vector>
 #include <cmath>
 
+extern Game game;
+
+void windowSizeCallback(GLFWwindow* window, int width, int height)
+{
+    game.width = width;
+    game.height = height;
+
+    float aspect_ratio = float(width)/float(height);
+    float scale = 1;
+
+    if (game.maintain_width)
+    {
+        scale = width / game.current_width;
+        game.current_height = height/scale;
+
+        game.width = scale * game.current_width;
+        game.height = scale * game.current_height;
+    }
+    else
+    {
+
+    }
+
+    game.regenFBO();
+}
+
 void Game::init() {
     // Initialize GLFW and create a window
     glfwInit();
@@ -67,17 +93,17 @@ void Game::init() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)nullptr);
     glEnableVertexAttribArray(0);
 
-    // Read and build the shader pixelProgram
-    readShader(pixelProgram, "shaders/vertex.vert", "shaders/fragment.frag");
-    //readShader(pixelProgram, "shaders/blue.vert", "shaders/blue.frag");
+    // Read and build the shader pixel_program
+    readShader(pixel_program, "shaders/vertex.vert", "shaders/fragment.frag");
+    //readShader(pixel_program, "shaders/blue.vert", "shaders/blue.frag");
     GLint isLinked = 0;
-    glGetProgramiv(pixelProgram, GL_LINK_STATUS, &isLinked);
+    glGetProgramiv(pixel_program, GL_LINK_STATUS, &isLinked);
     if(isLinked == GL_FALSE)
     {
         GLchar infoLog[512];
-        glGetProgramInfoLog(pixelProgram, 512, nullptr, infoLog);
+        glGetProgramInfoLog(pixel_program, 512, nullptr, infoLog);
         std::cout << "Linking Error: " << infoLog << std::endl;
-        validateProgram(pixelProgram);
+        validateProgram(pixel_program);
     }
 
     // Unbind the VAO
@@ -108,12 +134,45 @@ void Game::init() {
 
     createFBO();
 
-    std::cout << pixelProgram << std::endl;
+    std::cout << pixel_program << std::endl;
 
     if(glewIsSupported("GL_ARB_debug_output"))
     {
         glDebugMessageCallback(openglCallbackFunction, nullptr);
         glEnable(GL_DEBUG_OUTPUT);
+    }
+
+    glfwSetWindowSizeCallback(window, windowSizeCallback);
+}
+
+void Game::regenFBO()
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo_handle);
+
+    // Delete previous texture
+    glDeleteTextures(1, &fbo_texture);
+
+    // Generate texture handle
+    glGenTextures(1, &fbo_texture);
+
+    // Bind the texture
+    glBindTexture(GL_TEXTURE_2D, fbo_texture);
+
+    // Set texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    // Allocate texture memory
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, current_width, current_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+
+    // Attach texture to FBO
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo_texture, 0);
+
+    int status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if (status != GL_FRAMEBUFFER_COMPLETE) {
+        std::cerr << "Failed to resize FBO" << std::endl;
     }
 }
 
@@ -137,7 +196,7 @@ void Game::createFBO() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     // Allocate texture memory
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 256, 144, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, current_width, current_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
 
     // Attach texture to FBO
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, fbo_texture, 0);
@@ -162,12 +221,6 @@ void Game::loop() {
 
     auto start_time = std::chrono::high_resolution_clock::now();
     while (!glfwWindowShouldClose(window)) {
-
-        render();
-
-        // going to be useful
-        // glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, shape.xSize, shape.ySize, shape.zSize, GL_RGBA, GL_UNSIGNED_BYTE, shape.data);
-
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         {
             camera.y -= 1;
@@ -184,9 +237,15 @@ void Game::loop() {
         {
             camera.x -= 1;
         }
-
-
         sendCamera();
+        render();
+
+        // going to be useful
+        // glTexSubImage3D(GL_TEXTURE_3D, 0, 0, 0, 0, shape.xSize, shape.ySize, shape.zSize, GL_RGBA, GL_UNSIGNED_BYTE, shape.data);
+
+
+
+
         glfwSwapBuffers(window);
         glfwPollEvents();
         //fps();
@@ -220,8 +279,8 @@ void Game::fps()
 }
 
 void Game::render() {
-    // Apply the shader pixelProgram and render a rectangle
-    glUseProgram(pixelProgram);
+    // Apply the shader pixel_program and render a rectangle
+    glUseProgram(pixel_program);
 
     glBindVertexArray(VAO);
 
@@ -234,8 +293,8 @@ void Game::render() {
     {
         glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo_handle);
         glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-        glBlitFramebuffer(0, 0, 256, 144,
-                          0, 0, 1280, 720,
+        glBlitFramebuffer(0, 0, current_width, current_height,
+                          0, 0, width, height,
                           GL_COLOR_BUFFER_BIT,
                           GL_NEAREST);
         glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
@@ -347,8 +406,8 @@ void sendUniform3iSafely(GLuint program, std::string name, int x, int y, int z)
 
 void Game::sendCamera()
 {
-    glUseProgram(pixelProgram);
-    GLuint location = glGetUniformLocation(pixelProgram, "cameraPosition");
+    glUseProgram(pixel_program);
+    GLuint location = glGetUniformLocation(pixel_program, "cameraPosition");
 
     if(location == -1)
         std::cout << "cameraPosition not found in shader" << std::endl;
@@ -364,7 +423,7 @@ void Game::sendCamera()
 }
 
 void Game::sendVoxelShapeToFragmentShader(VoxelShape& voxelShape) const {
-    sendUniform3iSafely(pixelProgram, "voxelShapeSize", voxelShape.xSize, voxelShape.ySize, voxelShape.zSize);
+    sendUniform3iSafely(pixel_program, "voxelShapeSize", voxelShape.xSize, voxelShape.ySize, voxelShape.zSize);
 
     // Create the 3D texture
     GLuint textureID;
@@ -384,7 +443,7 @@ void Game::sendVoxelShapeToFragmentShader(VoxelShape& voxelShape) const {
     glBindTexture(GL_TEXTURE_3D, textureID);
 
     // Bind the texture to a uniform sampler in the fragment shader
-    GLint voxelShapeUniform = glGetUniformLocation(pixelProgram, "voxelShape");
+    GLint voxelShapeUniform = glGetUniformLocation(pixel_program, "voxelShape");
     glUniform1i(voxelShapeUniform, textureUnit);
 }
 

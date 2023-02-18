@@ -19,18 +19,22 @@ public:
     // Game Functionality
     void sendVoxelShapeToFragmentShader(VoxelShape& shape) const;
 
-private:
+public:
     GLFWwindow* window;
+    int start_width = 256;
+    int start_height = 144;
+    int current_width = start_width;
+    int current_height = start_height;
     int width = 1280;
     int height = 720;
-    GLuint pixelProgram;
-    GLuint scaleProgram;
+    GLuint pixel_program;
+    GLuint scale_program;
 
     bool scale = true;
     GLuint fbo_handle;
     GLuint fbo_texture;
 
-    VoxelShape shape = VoxelShape(10,10,10);
+    VoxelShape shape = VoxelShape(100,100,100);
 
     void createFBO();
 
@@ -43,4 +47,8 @@ private:
     };
     Camera camera{ 77, 47 };
     void sendCamera();
+
+    bool maintain_width = true;
+
+    void regenFBO();
 };
