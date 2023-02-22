@@ -3,7 +3,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "voxelshape.h"
+#include "helpful.h"
 
 class Game {
 public:
@@ -34,7 +34,7 @@ public:
     GLuint fbo_handle;
     GLuint fbo_texture;
 
-    VoxelShape shape = VoxelShape(100,100,100);
+    VoxelShape shape = convertMagicaVoxelToVoxelShape("vox/monu1.vox");
 
     void createFBO();
 

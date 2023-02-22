@@ -16,3 +16,8 @@ add_custom_command(
         TARGET fragiso
         PRE_BUILD COMMAND ${CMAKE_COMMAND} -E
         create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/shaders $<TARGET_FILE_DIR:fragiso>/shaders)
+
+add_custom_command(
+        TARGET fragiso
+        PRE_BUILD COMMAND ${CMAKE_COMMAND} -E
+        create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/vox $<TARGET_FILE_DIR:fragiso>/vox)

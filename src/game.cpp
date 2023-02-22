@@ -1,5 +1,4 @@
 #include "game.h"
-#include "helpful.h"
 #include <chrono>
 #include <iostream>
 #include <fstream>
@@ -41,7 +40,7 @@ void Game::init() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
-    window = glfwCreateWindow(1280, 720, "game", nullptr, nullptr);
+    window = glfwCreateWindow(width, height, "Isometric", nullptr, nullptr);
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // vsync
 
@@ -109,22 +108,6 @@ void Game::init() {
     // Unbind the VAO
     // glBindVertexArray(0);
 
-    for (int x = 0; x < shape.xSize; x++)
-    {
-        for (int y = 0; y < shape.ySize; y++)
-        {
-            for (int z = 0; z < shape.zSize; z++)
-            {
-                shape.setPixel(x,y,0, RGBA(0,0,255));
-                shape.setPixel(0,y,z, RGBA(0,255,0));
-                shape.setPixel(x,0,z, RGBA(255,0,0));
-
-                shape.setPixel(x,y,shape.zSize-1, RGBA(0,0,255));
-                shape.setPixel(shape.xSize-1,y,z, RGBA(0,255,0));
-                shape.setPixel(x,shape.ySize-1,z, RGBA(255,0,0));
-            }
-        }
-    }
 
 
     sendVoxelShapeToFragmentShader(shape);

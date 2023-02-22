@@ -28,7 +28,7 @@ void main()
 {
     vec2 coord = gl_FragCoord.xy - cameraPosition;
 
-    rayPosition = vec3(coord,50);
+    rayPosition = vec3(coord,200);
     rayPosition = vec3(rayPosition.x - int(coord/2), rayPosition.y, rayPosition.z- int(coord/2));
 
     int steps = 0;
