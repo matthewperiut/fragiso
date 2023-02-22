@@ -23,6 +23,11 @@ vec4 getColor(vec3 texCoords)
     return texture(voxelShape, (texCoords + vec3(0,0,0.5))/voxelShapeSize);
 }
 
+bool anything(vec3 pos)
+{
+    return getColor(pos) == blank;
+}
+
 vec3 rayPosition;
 void main()
 {
@@ -37,10 +42,16 @@ void main()
         rayPosition.z --;
         rayPosition.y --;
         rayPosition.x --;
+
         color = getColor(rayPosition);
         if (color != blank)
         {
-            FragColor = color;
+            vec3 darkness = vec3(0,0,0);
+            if (anything(rayPosition + vec3(1,0,0))) darkness = vec3(0.02,0.02,0.02);
+            //else if (anything(rayPosition + vec3(0,1,0))) darkness = vec3(-0.02,-0.02,-0.02);
+            else if (anything(rayPosition + vec3(0,0,1))) darkness = vec3(0.04,0.04,0.04);
+
+            FragColor = color + vec4(darkness,0);
             return;
         }
     }
