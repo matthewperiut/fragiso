@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <memory>
 
 struct RGBA {
     uint8_t r;
@@ -21,6 +22,23 @@ public:
         for (int i = 0; i < xSize * ySize * zSize; ++i) {
             data[i] = RGBA{ 255, 0, 0, 255 };
         }
+    }
+
+    VoxelShape& operator=(const VoxelShape& other) {
+        if (this != &other) {
+            // Deallocate the previously allocated memory
+            delete[] data;
+
+            // Copy the size and allocate new memory
+            xSize = other.xSize;
+            ySize = other.ySize;
+            zSize = other.zSize;
+            data = new RGBA[xSize * ySize * zSize];
+
+            // Copy the pixel data
+            std::copy(other.data, other.data + xSize * ySize * zSize, data);
+        }
+        return *this;
     }
 
     ~VoxelShape() {
