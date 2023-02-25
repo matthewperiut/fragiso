@@ -34,7 +34,8 @@ public:
     GLuint fbo_handle;
     GLuint fbo_texture;
 
-    VoxelShape shape = convertMagicaVoxelToVoxelShape("vox/monu1.vox");
+    std::string shape_name = "vox/monu1.vox";
+    VoxelShape shape = convertMagicaVoxelToVoxelShape(shape_name.c_str());
 
     void createFBO();
 

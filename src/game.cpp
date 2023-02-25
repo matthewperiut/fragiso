@@ -204,6 +204,36 @@ void Game::loop() {
 
     auto start_time = std::chrono::high_resolution_clock::now();
     while (!glfwWindowShouldClose(window)) {
+
+        if(glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+        {
+            shape_name = "vox/monu1.vox";
+        }
+        if(glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+        {
+            shape_name = "vox/teapot.vox";
+        }
+        if(glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+        {
+            shape_name = "vox/sphere.vox";
+        }
+        if(glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+        {
+            shape_name = "vox/test.vox";
+        }
+
+        if(glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS && !pressed1)
+        {
+            pressed1 = true;
+            shape = convertMagicaVoxelToVoxelShape(shape_name.c_str());
+            sendVoxelShapeToFragmentShader(shape);
+
+        }
+        if(glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE)
+        {
+            pressed1 = false;
+        }
+
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         {
             camera.y -= 1;

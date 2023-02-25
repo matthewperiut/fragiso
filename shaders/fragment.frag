@@ -23,9 +23,26 @@ vec4 getColor(vec3 texCoords)
     return texture(voxelShape, (texCoords + vec3(0,0,0.5))/voxelShapeSize);
 }
 
-bool anything(vec3 pos)
+bool nothing(vec3 pos)
 {
     return getColor(pos) == blank;
+}
+bool anything(vec3 pos)
+{
+    return !nothing(pos);
+}
+
+vec3 getNormal(vec3 pos)
+{
+    int dist = 1;
+    vec3 otherBlocks = vec3(0.f,0.f,0.f);
+
+    otherBlocks.x = 1.f * float(int(nothing(pos+vec3(1.f,0.f,0.f)))) + -1.f * float(int(nothing(pos+vec3(-1.f,0.f,0.f))));
+    otherBlocks.y = 1.f * float(int(nothing(pos+vec3(0.f,1.f,0.f)))) + -1.f * float(int(nothing(pos+vec3(0.f,-1.f,0.f))));
+    otherBlocks.z = 1.f * float(int(nothing(pos+vec3(0.f,0.f,1.f)))) + -1.f * float(int(nothing(pos+vec3(0.f,0.f,-1.f))));
+
+    vec3 away = otherBlocks;
+    return normalize(away);
 }
 
 vec3 rayPosition;
@@ -46,12 +63,15 @@ void main()
         color = getColor(rayPosition);
         if (color != blank)
         {
-            vec3 darkness = vec3(0,0,0);
-            if (anything(rayPosition + vec3(1,0,0))) darkness = vec3(0.02,0.02,0.02);
-            //else if (anything(rayPosition + vec3(0,1,0))) darkness = vec3(-0.02,-0.02,-0.02);
-            else if (anything(rayPosition + vec3(0,0,1))) darkness = vec3(0.04,0.04,0.04);
+            vec3 normal = getNormal(rayPosition);
 
-            FragColor = color + vec4(darkness,0);
+            vec3 lightDir = normalize(vec3(-0.2, -1, -1));
+
+            float lightIntensity = max(dot(normal, -lightDir), 0.5f);
+
+            float heightModifier = rayPosition.y / voxelShapeSize.y;
+
+            FragColor = color * lightIntensity;
             return;
         }
     }
