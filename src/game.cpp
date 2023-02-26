@@ -202,8 +202,13 @@ void Game::loop() {
     int num = 0;
     int ct = 0;
 
-    auto start_time = std::chrono::high_resolution_clock::now();
-    while (!glfwWindowShouldClose(window)) {
+    auto start = std::chrono::high_resolution_clock::now();
+    auto last = std::chrono::high_resolution_clock::now();
+    while (!glfwWindowShouldClose(window))
+    {
+        auto now = std::chrono::high_resolution_clock::now();
+        float delta = float(std::chrono::duration_cast<std::chrono::milliseconds>(last - now).count())/1000.f;
+        last = std::chrono::high_resolution_clock::now();
 
         if(glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
         {
@@ -250,6 +255,11 @@ void Game::loop() {
         {
             camera.x -= 1;
         }
+
+        auto end = std::chrono::high_resolution_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+        sendUniform1fSafely(pixel_program, "time", ((float)duration.count()/1000.f));
+
         sendCamera();
         render();
 
@@ -262,6 +272,7 @@ void Game::loop() {
         glfwSwapBuffers(window);
         glfwPollEvents();
         //fps();
+
     }
 }
 
@@ -401,22 +412,6 @@ void Game::readShader(GLuint& program, const char* vertexPath, const char* fragm
     glDeleteShader(fragmentShader);
 }
 
-void sendUniform3iSafely(GLuint program, std::string name, int x, int y, int z)
-{
-    glUseProgram(program);
-    GLuint location = glGetUniformLocation(program, name.c_str());
-    if(location == -1)
-        std::cout << "Uniform " + name + " not found or not active" << std::endl;
-    else
-    {
-        glUniform3f(location, x, y, z);
-        GLenum error = glGetError();
-        if (error != GL_NO_ERROR) {
-            std::cout << "(" + name + ") Error: " << error << std::endl;
-        }
-    }
-}
-
 void Game::sendCamera()
 {
     glUseProgram(pixel_program);
@@ -436,7 +431,7 @@ void Game::sendCamera()
 }
 
 void Game::sendVoxelShapeToFragmentShader(VoxelShape& voxelShape) const {
-    sendUniform3iSafely(pixel_program, "voxelShapeSize", voxelShape.xSize, voxelShape.ySize, voxelShape.zSize);
+    sendUniform3fSafely(pixel_program, "voxelShapeSize", voxelShape.xSize, voxelShape.ySize, voxelShape.zSize);
 
     // Create the 3D texture
     GLuint textureID;

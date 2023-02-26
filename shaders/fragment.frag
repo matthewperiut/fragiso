@@ -8,6 +8,8 @@ uniform vec3 voxelPosition;
 
 uniform vec2 cameraPosition;
 
+uniform float time;
+
 const vec4 blank = vec4(0.f,0.f,0.f,0.f);
 vec4 color = blank;
 vec4 getColor(vec3 texCoords)
@@ -53,6 +55,10 @@ void main()
     rayPosition = vec3(coord,200);
     rayPosition = vec3(rayPosition.x - int(coord/2), rayPosition.y, rayPosition.z- int(coord/2));
 
+    float radius = 1;
+    vec3 noLight = vec3(-(radius * cos(time)), -1, -(radius * sin(time)));
+    vec3 lightDir = normalize(noLight);
+
     int steps = 0;
     while (rayPosition.z > 0)
     {
@@ -61,16 +67,23 @@ void main()
         rayPosition.x --;
 
         color = getColor(rayPosition);
+
         if (color != blank)
         {
             vec3 normal = getNormal(rayPosition);
 
-            vec3 lightDir = normalize(vec3(-0.2, -1, -1));
+            float lowestLight = 0.5f;
+            float lightIntensity = max(dot(normal, -lightDir), lowestLight);
 
-            float lightIntensity = max(dot(normal, -lightDir), 0.5f);
-
-            float heightModifier = rayPosition.y / voxelShapeSize.y;
-
+            while (rayPosition.y < 200)
+            {
+                rayPosition -= noLight;
+                if (anything(rayPosition))
+                {
+                    lightIntensity = lowestLight;
+                    break;
+                }
+            }
             FragColor = color * lightIntensity;
             return;
         }

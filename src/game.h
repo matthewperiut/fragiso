@@ -22,11 +22,11 @@ public:
 public:
     GLFWwindow* window;
     int start_width = 256;
-    int start_height = 144;
+    int start_height = 256;
     int current_width = start_width;
     int current_height = start_height;
     int width = 1280;
-    int height = 720;
+    int height = 1280;
     GLuint pixel_program;
     GLuint scale_program;
 
