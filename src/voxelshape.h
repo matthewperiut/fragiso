@@ -1,7 +1,7 @@
 #pragma once
 
-#include <vector>
 #include <memory>
+#include <vector>
 
 struct RGBA {
     uint8_t r;
@@ -17,49 +17,36 @@ struct RGBA {
 class VoxelShape {
 public:
     VoxelShape(int xSize, int ySize, int zSize)
-            : xSize(xSize), ySize(ySize), zSize(zSize) {
-        data = new RGBA[xSize * ySize * zSize];
+            : xSize(xSize), ySize(ySize), zSize(zSize)
+    {
+        data = std::make_unique<RGBA[]>(xSize * ySize * zSize);
         for (int i = 0; i < xSize * ySize * zSize; ++i) {
             data[i] = RGBA{ 255, 0, 0, 255 };
         }
     }
 
-    VoxelShape& operator=(const VoxelShape& other) {
-        if (this != &other) {
-            // Deallocate the previously allocated memory
-            delete[] data;
-
-            // Copy the size and allocate new memory
-            xSize = other.xSize;
-            ySize = other.ySize;
-            zSize = other.zSize;
-            data = new RGBA[xSize * ySize * zSize];
-
-            // Copy the pixel data
-            std::copy(other.data, other.data + xSize * ySize * zSize, data);
-        }
-        return *this;
-    }
-
-    ~VoxelShape() {
-        delete[] data;
-    }
-
-    void setPixel(int x, int y, int z, RGBA rgba) {
+    void setPixel(int x, int y, int z, RGBA rgba)
+    {
         data[index(x, y, z)] = rgba;
     }
 
-    RGBA getPixel(int x, int y, int z) {
+    RGBA getPixel(int x, int y, int z) const
+    {
         return data[index(x, y, z)];
     }
+
+    int getSizeX() const { return xSize; }
+    int getSizeY() const { return ySize; }
+    int getSizeZ() const { return zSize; }
 
 public:
     int xSize;
     int ySize;
     int zSize;
-    RGBA* data;
+    std::unique_ptr<RGBA[]> data;
 
-    int index(int x, int y, int z) {
+    int index(int x, int y, int z) const
+    {
         return x + y * xSize + z * xSize * ySize;
     }
 };

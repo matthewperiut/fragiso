@@ -438,7 +438,7 @@ void Game::sendVoxelShapeToFragmentShader(VoxelShape& voxelShape) const {
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_3D, textureID);
 
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, shape.xSize, shape.ySize, shape.zSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, shape.data);
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, shape.xSize, shape.ySize, shape.zSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, shape.data.get());
 
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
