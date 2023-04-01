@@ -3,43 +3,39 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "helpful.h"
+#include "lower/helpful.h"
+#include "lower/framebuffer.h"
+#include "vox/voxelshape.h"
 
 class Game {
 public:
-    GLuint VBO, VAO, EBO;
+    GLuint screen_vao;
 
     // Fundamental Functions
     void init();
     void loop();
     void render();
-    void readShader(GLuint& program, const char* vertexPath, const char* fragmentPath);
-    void validateProgram(GLuint programToValidate);
-
-    // Game Functionality
-    void sendVoxelShapeToFragmentShader(VoxelShape& shape) const;
 
 public:
     GLFWwindow* window;
+
     int start_width = 256;
     int start_height = 144;
     int current_width = start_width;
     int current_height = start_height;
     int width = 1280;
     int height = 720;
+    bool maintain_width = true;
+
     GLuint pixel_program;
     GLuint scale_program;
 
     bool scale = true;
-    GLuint fbo_handle;
-    GLuint fbo_texture;
+    framebuffer fbo;
 
     std::string shape_name = "vox/monu1.vox";
-    VoxelShape shape = convertMagicaVoxelToVoxelShape(shape_name.c_str());
+    VoxelShape shape = VoxelShape(shape_name.c_str());
 
-    void createFBO();
-
-    void fps();
 
     struct Camera
     {
@@ -47,9 +43,7 @@ public:
         double x, y;
     };
     Camera camera{ 77, 47 };
-    void sendCamera();
+    void processCamera();
 
-    bool maintain_width = true;
 
-    void regenFBO();
 };

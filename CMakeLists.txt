@@ -3,7 +3,9 @@ project(fragiso)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(fragiso src/main.cpp src/game.cpp src/game.h src/voxelshape.h src/helpful.cpp src/helpful.h)
+file (GLOB MY_SRC "src/*" "src/lower/*" "src/vox/*")
+
+add_executable(fragiso ${MY_SRC})
 
 find_package(GLEW REQUIRED)
 target_link_libraries(fragiso PRIVATE GLEW::GLEW)

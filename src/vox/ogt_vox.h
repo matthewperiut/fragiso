@@ -1367,7 +1367,7 @@ ogt_vox_transform ogt_vox_sample_instance_transform(const ogt_vox_instance* inst
                 }
                 case CHUNK_ID_RGBA:
                 {
-                    ogt_assert(chunk_size == sizeof(palette), "unexpected chunk size for RGBA chunk");
+                    ogt_assert(chunk_size == sizeof(palette), "unexpected chunk size for Pixel chunk");
                     _vox_file_read(fp, &palette, sizeof(palette));
                     break;
                 }
@@ -2458,7 +2458,7 @@ ogt_vox_transform ogt_vox_sample_instance_transform(const ogt_vox_instance* inst
             _vox_file_write_uint32_at_offset(fp, offset_of_chunk_header + 4, &chunk_size);
         }
 
-        // write out RGBA chunk for the palette
+        // write out Pixel chunk for the palette
         {
             // .vox stores palette rotated by 1 color index, so do that now.
             ogt_vox_palette rotated_palette;

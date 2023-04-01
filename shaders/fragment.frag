@@ -60,7 +60,7 @@ void main()
     vec3 lightDir = normalize(noLight);
 
     int steps = 0;
-    while (rayPosition.z > 0)
+    while (rayPosition.y > 0)
     {
         rayPosition.z --;
         rayPosition.y --;
