@@ -35,4 +35,8 @@ public:
 
     void loadMagica(const char* filepath);
     void send(unsigned int program);
+
+    // png
+    void save(const char* filepath);
+    void load(const char* filepath);
 };

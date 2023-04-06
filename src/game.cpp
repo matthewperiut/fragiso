@@ -52,6 +52,7 @@ void Game::init()
     }
 
     glfwSetWindowSizeCallback(window, windowSizeCallback);
+    shape.save("image.png");
 }
 
 void Game::loop()

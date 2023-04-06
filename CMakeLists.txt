@@ -3,7 +3,7 @@ project(fragiso)
 
 set(CMAKE_CXX_STANDARD 14)
 
-file (GLOB MY_SRC "src/*" "src/lower/*" "src/vox/*")
+file (GLOB MY_SRC "src/*" "src/lower/*" "src/vox/*" "src/png/*")
 
 add_executable(fragiso ${MY_SRC})
 

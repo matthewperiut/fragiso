@@ -6,6 +6,11 @@
 #define OGT_VOX_IMPLEMENTATION
 #include "ogt_vox.h"
 
+#include "../png/fpng.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "../png/stb_image.h"
+
 #include <GL/glew.h>
 #include <iostream>
 #include <fstream>
@@ -120,4 +125,79 @@ void VoxelShape::loadMagica(const char* filepath)
         std::cout << "Failed to load vox" << std::endl;
         exit(-1);
     }
+}
+
+void VoxelShape::save(const char* filepath) // to gpu
+{
+    int horizontal_layers = floor(sqrt(ySize));
+    int vertical_layers = ceil(sqrt(ySize)) + 1;
+
+    int horizontal_pixels = horizontal_layers * xSize;
+    int vertical_pixels = vertical_layers * zSize;
+    int num_chans = 4;
+    std::vector<uint8_t> pixels(horizontal_pixels * vertical_pixels * num_chans);
+
+    for (int layer = 0; layer < ySize; layer++)
+    {
+        int horizontal_layer_offset = layer % horizontal_layers;
+        int horizontal_pixel_offset = horizontal_layer_offset * xSize;
+        int vertical_layer_offset = floor(layer / horizontal_layers);
+        int vertical_pixel_offset = vertical_layer_offset * zSize;
+
+        int& hpo = horizontal_pixel_offset;
+        int& vpo = vertical_pixel_offset;
+
+        for (int hp = 0; hp < xSize; hp++)
+        {
+            for (int vp = 0; vp < zSize; vp++)
+            {
+                Pixel pixel = getPixel(hp,layer,vp);
+                uint32_t i = ((vp + vpo) * (horizontal_pixels) + (hp + hpo)) * num_chans;
+
+                pixels[i] = pixel.r;        // red channel
+                pixels[i + 1] = pixel.g;   // green channel
+                pixels[i + 2] = pixel.b;   // blue channel
+                pixels[i + 3] = pixel.a;   // alpha channel
+            }
+        }
+    }
+
+    bool success = fpng::fpng_encode_image_to_file(filepath, pixels.data(), horizontal_pixels, vertical_pixels, num_chans);
+    if (!success)
+    {
+        std::cout << "encode fail" << std::endl;
+    }
+}
+
+void VoxelShape::load(const char* filepath)
+{
+    std::vector<uint8_t> pixels;
+    uint32_t width, height, num_chans;
+
+    // Read the input PNG file
+    int result = fpng::fpng_decode_file(filepath, pixels, width, height, num_chans, 4);
+    if (result == fpng::FPNG_DECODE_NOT_FPNG)
+    {
+        int x, y, n;
+        unsigned char* data = stbi_load(filepath, &x, &y, &n, 4);
+        if (data == nullptr) {
+            std::cout << "stb_image - failure to read " << filepath << std::endl;
+        }
+
+        // Copy the pixel data to the output vector
+        pixels.assign(data, data + x * y * 4);
+        width = x;
+        height = y;
+        num_chans = 4;
+
+        // Free the stb_image memory
+        stbi_image_free(data);
+    }
+    else if (result != fpng::FPNG_DECODE_SUCCESS)
+    {
+        std::cout << "fpng - failure to read " << filepath << std::endl;
+        return;
+    }
+
+    // put resulting image into vox (todo)
 }
