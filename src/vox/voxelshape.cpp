@@ -3,18 +3,31 @@
 //
 #include "voxelshape.h"
 
+// opengl calls
+#include <GL/glew.h>
+
+// vox reading
 #define OGT_VOX_IMPLEMENTATION
 #include "ogt_vox.h"
 
-#include "../png/fpng.h"
-
+// png manipulation
 #define STB_IMAGE_IMPLEMENTATION
 #include "../png/stb_image.h"
+#include "../png/fpng.h"
+#include "../png/metadata.h"
 
-#include <GL/glew.h>
+// standards
 #include <iostream>
-#include <fstream>
+#include <chrono>
 #include <string>
+#include <fstream>
+#include <sstream>
+
+bool ends_with(const std::string& str, const std::string& suffix)
+{
+    if (suffix.size() > str.size()) return false;
+    return std::equal(suffix.rbegin(), suffix.rend(), str.rbegin());
+}
 
 VoxelShape::VoxelShape(int xSize, int ySize, int zSize)
 {
@@ -23,7 +36,12 @@ VoxelShape::VoxelShape(int xSize, int ySize, int zSize)
 
 VoxelShape::VoxelShape(const char* filepath)
 {
-    loadMagica(filepath);
+    if (ends_with(filepath, ".vox"))
+        loadMagica(filepath);
+    else if (ends_with(filepath, ".png"))
+        load(filepath);
+    else
+        std::cerr << "Invalid filetype for voxelshape: " << filepath << std::endl;
 }
 
 void VoxelShape::create(int xSize, int ySize, int zSize)
@@ -34,7 +52,7 @@ void VoxelShape::create(int xSize, int ySize, int zSize)
 
     data = std::make_unique<Pixel[]>(xSize * ySize * zSize);
     for (int i = 0; i < xSize * ySize * zSize; ++i) {
-        data[i] = Pixel{255, 0, 0, 255 };
+        data[i] = Pixel{0, 0, 0, 0 };
     }
 }
 
@@ -85,7 +103,7 @@ void VoxelShape::send(unsigned int program) // to gpu
 
 void VoxelShape::loadMagica(const char* filepath)
 {
-    auto start = std::chrono::high_resolution_clock::now(); // Get the current time
+    auto start = std::chrono::high_resolution_clock::now();
 
     std::ifstream file(filepath, std::ios::binary | std::ios::ate);
     std::streamsize size = file.tellg();
@@ -129,6 +147,8 @@ void VoxelShape::loadMagica(const char* filepath)
 
 void VoxelShape::save(const char* filepath) // to gpu
 {
+    auto start = std::chrono::high_resolution_clock::now();
+
     int horizontal_layers = floor(sqrt(ySize));
     int vertical_layers = ceil(sqrt(ySize)) + 1;
 
@@ -167,10 +187,40 @@ void VoxelShape::save(const char* filepath) // to gpu
     {
         std::cout << "encode fail" << std::endl;
     }
+
+    write_size_metadata(filepath, xSize, ySize, zSize);
+    auto end = std::chrono::high_resolution_clock::now(); // Get the current time again
+
+    // Calculate the time difference
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "\"" << filepath << "\" saved in " << duration.count() << " milliseconds" << std::endl;
 }
+
+
 
 void VoxelShape::load(const char* filepath)
 {
+    auto start = std::chrono::high_resolution_clock::now();
+
+    {
+        std::string last_text = read_text_from_end_of_file(filepath);
+        std::istringstream iss(last_text);
+        char separator;
+        iss >> xSize >> separator >> ySize >> separator >> zSize;
+
+        if (xSize + ySize + zSize == 0)
+        {
+            std::cout << "xSize:";
+            std::cin >> xSize;
+            std::cout << "ySize:";
+            std::cin >> ySize;
+            std::cout << "zSize:";
+            std::cin >> zSize;
+            write_size_metadata(filepath,xSize,ySize,zSize);
+        }
+    }
+    create(xSize, ySize, zSize);
+
     std::vector<uint8_t> pixels;
     uint32_t width, height, num_chans;
 
@@ -199,5 +249,39 @@ void VoxelShape::load(const char* filepath)
         return;
     }
 
-    // put resulting image into vox (todo)
+    // Calculate layer dimensions
+    int horizontal_layers = floor(sqrt(ySize));
+    int vertical_layers = ceil(sqrt(ySize)) + 1;
+
+    // Loop through each layer
+    for (int layer = 0; layer < ySize; layer++)
+    {
+        int horizontal_layer_offset = layer % horizontal_layers;
+        int horizontal_pixel_offset = horizontal_layer_offset * xSize;
+        int vertical_layer_offset = floor(layer / horizontal_layers);
+        int vertical_pixel_offset = vertical_layer_offset * zSize;
+
+        int& hpo = horizontal_pixel_offset;
+        int& vpo = vertical_pixel_offset;
+
+        // Loop through each pixel
+        for (int hp = 0; hp < xSize; hp++)
+        {
+            for (int vp = 0; vp < zSize; vp++)
+            {
+                // Read the pixel color from the vector
+                uint32_t i = ((vp + vpo) * width + (hp + hpo)) * num_chans;
+                Pixel p = Pixel(pixels[i], pixels[i + 1], pixels[i + 2], pixels[i + 3]);
+
+                // Set the voxel color
+                setPixel(hp, layer, vp, p);
+            }
+        }
+    }
+
+    auto end = std::chrono::high_resolution_clock::now(); // Get the current time again
+
+    // Calculate the time difference
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "\"" << filepath << "\" loaded in " << duration.count() << " milliseconds" << std::endl;
 }
