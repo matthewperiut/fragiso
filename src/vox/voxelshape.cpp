@@ -149,6 +149,14 @@ void VoxelShape::save(const char* filepath) // to gpu
 {
     auto start = std::chrono::high_resolution_clock::now();
 
+    std::string fp = filepath;
+    if (ends_with(fp, ".vox"))
+    {
+        fp = fp.substr(0, fp.length()-4);
+        fp.append(".png");
+        filepath = fp.c_str();
+    }
+
     int horizontal_layers = floor(sqrt(ySize));
     int vertical_layers = ceil(sqrt(ySize)) + 1;
 
