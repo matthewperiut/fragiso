@@ -39,9 +39,25 @@ vec3 getNormal(vec3 pos)
     int dist = 1;
     vec3 otherBlocks = vec3(0.f,0.f,0.f);
 
-    otherBlocks.x = 1.f * float(int(nothing(pos+vec3(1.f,0.f,0.f)))) + -1.f * float(int(nothing(pos+vec3(-1.f,0.f,0.f))));
-    otherBlocks.y = 1.f * float(int(nothing(pos+vec3(0.f,1.f,0.f)))) + -1.f * float(int(nothing(pos+vec3(0.f,-1.f,0.f))));
-    otherBlocks.z = 1.f * float(int(nothing(pos+vec3(0.f,0.f,1.f)))) + -1.f * float(int(nothing(pos+vec3(0.f,0.f,-1.f))));
+    otherBlocks.x = 1.f * float(int(nothing(pos+vec3(1.f,0.f,0.f))));// + -1.f * float(int(nothing(pos+vec3(-1.f,0.f,0.f))));
+    otherBlocks.y = 1.f * float(int(nothing(pos+vec3(0.f,1.f,0.f))));// + -1.f * float(int(nothing(pos+vec3(0.f,-1.f,0.f))));
+    otherBlocks.z = 1.f * float(int(nothing(pos+vec3(0.f,0.f,1.f))));// + -1.f * float(int(nothing(pos+vec3(0.f,0.f,-1.f))));
+
+    if (otherBlocks == vec3(0.f,0.f,0.f))
+    {
+        if (nothing(pos+vec3(1.f,1.f,0.f)))
+        {
+            otherBlocks = vec3(1.f,1.f,0.f);
+        }
+        else if (nothing(pos+vec3(0.f,1.f,1.f)))
+        {
+            otherBlocks = vec3(0.f,1.f,1.f);
+        }
+        else if (nothing(pos+vec3(1.f,0.f,1.f)))
+        {
+            otherBlocks = vec3(1.f,0.f,0.f);
+        }
+    }
 
     vec3 away = otherBlocks;
     return normalize(away);
@@ -84,7 +100,8 @@ void main()
                     break;
                 }
             }
-            FragColor = color * lightIntensity;
+            //FragColor = vec4(normal, 1.f);
+            FragColor = color;// * lightIntensity;
             return;
         }
     }

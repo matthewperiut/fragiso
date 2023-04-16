@@ -23,7 +23,10 @@ public:
     void create(int xSize, int ySize, int zSize);
 
     void setPixel(int x, int y, int z, Pixel pixel) const;
+    void setAlpha(int x, int y, int z, uint8_t alpha) const;
     Pixel getPixel(int x, int y, int z) const;
+    bool anyPixel(int x, int y, int z) const;
+    bool colorPixelComp(int x, int y, int z, int value) const;
 
 public:
     int xSize{};

@@ -5,6 +5,8 @@
 
 extern Game game;
 
+VoxelShape calculateNormals(VoxelShape& vox);
+
 void windowSizeCallback(GLFWwindow* window, int width, int height)
 {
     game.width = width;
@@ -44,6 +46,7 @@ void Game::init()
 
     shape.send(pixel_program);
     fbo.create(width, height);
+    //calculateNormals(shape);
 
     if(glewIsSupported("GL_ARB_debug_output"))
     {
@@ -52,7 +55,7 @@ void Game::init()
     }
 
     glfwSetWindowSizeCallback(window, windowSizeCallback);
-    shape.save(shape_name.c_str());
+    calculateNormals(shape).save("normal.png");
 }
 
 void Game::loop()

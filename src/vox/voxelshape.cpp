@@ -71,6 +71,29 @@ Pixel VoxelShape::getPixel(int x, int y, int z) const
     return data[index(x, y, z)];
 }
 
+bool VoxelShape::colorPixelComp(int x, int y, int z, int value) const
+{
+    Pixel p = getPixel(x,y,z);
+    return (p.r + p.g + p.b + p.a == value);
+}
+
+bool VoxelShape::anyPixel(int x, int y, int z) const
+{
+    /*
+    static const Pixel zeroPixel = Pixel(0, 0, 0, 255);
+    return memcmp(&data[index(x,y,z)], &zeroPixel, sizeof(Pixel) - 1) != 0;*/
+
+    // Seems to be faster?
+    Pixel p = getPixel(x,y,z);
+    return (p.r + p.g + p.b + p.a != 0);
+}
+
+void VoxelShape::setAlpha(int x, int y, int z, uint8_t alpha) const
+{
+    data[index(x,y,z)].a = alpha;
+}
+
+
 // external needed
 void sendUniform3fSafely(GLuint program, std::string name, float x, float y, float z);
 void sendUniform1fSafely(GLuint program, std::string name, float t);
