@@ -44,7 +44,8 @@ void Game::init()
     // Read and build the shader pixel_program
     pixel_program = createShaderProgram("shaders/vertex.vert", "shaders/fragment.frag");
 
-    shape.send(pixel_program);
+    shape.send(pixel_program, "voxelShape");
+
     fbo.create(width, height);
     //calculateNormals(shape);
 
@@ -55,7 +56,6 @@ void Game::init()
     }
 
     glfwSetWindowSizeCallback(window, windowSizeCallback);
-    calculateNormals(shape).save("normal.png");
 }
 
 void Game::loop()

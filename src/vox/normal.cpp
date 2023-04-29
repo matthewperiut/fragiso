@@ -80,9 +80,15 @@ VoxelShape calculateNormals(VoxelShape& vox)
                         {
                             obx = 1.f;
                         }
+                        else if (!vox.anyPixel(x+1.f,y+1.f,z+1.f))
+                        {
+                            obx = 1.f;
+                            oby = 1.f;
+                            obz = 1.f;
+                        }
                     }
 
-                    result.setPixel(x,y,z,Pixel((obx*127.5)+127.5,(oby*127.5)+127.5,(obz*127.5)+127.5));
+                    result.setPixel(x,y,z,Pixel(obx*255,oby*255,obz*255));
                 }
 
             }

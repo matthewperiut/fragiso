@@ -22,6 +22,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include <filesystem>
 
 bool ends_with(const std::string& str, const std::string& suffix)
 {
@@ -98,14 +99,16 @@ void VoxelShape::setAlpha(int x, int y, int z, uint8_t alpha) const
 void sendUniform3fSafely(GLuint program, std::string name, float x, float y, float z);
 void sendUniform1fSafely(GLuint program, std::string name, float t);
 
-void VoxelShape::send(unsigned int program) // to gpu
+VoxelShape calculateNormals(VoxelShape& vox);
+
+void VoxelShape::send(unsigned int program, const char* uniformName) // to gpu
 {
     sendUniform3fSafely(program, "voxelShapeSize", xSize, ySize, zSize);
 
     // Create the 3D texture
-    GLuint textureID;
-    glGenTextures(1, &textureID);
-    glBindTexture(GL_TEXTURE_3D, textureID);
+    GLuint textureID[2];
+    glGenTextures(2, textureID);
+    glBindTexture(GL_TEXTURE_3D, textureID[0]);
 
     glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, xSize, ySize, zSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.get());
 
@@ -115,17 +118,45 @@ void VoxelShape::send(unsigned int program) // to gpu
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
 
-    GLuint textureUnit = 0;
-    glActiveTexture(GL_TEXTURE0 + textureUnit);
-    glBindTexture(GL_TEXTURE_3D, textureID);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_3D, textureID[0]);
 
     // Bind the texture to a uniform sampler in the fragment shader
     GLint voxelShapeUniform = glGetUniformLocation(program, "voxelShape");
-    glUniform1i(voxelShapeUniform, textureUnit);
+    std::cout << "voxel shape uniform location " << voxelShapeUniform << std::endl;
+    glUniform1i(voxelShapeUniform, 0);
+
+
+    // normal
+    VoxelShape normal = calculateNormals(*this);
+
+    glBindTexture(GL_TEXTURE_3D, textureID[1]);
+
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, xSize, ySize, zSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, normal.data.get());
+
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_3D, textureID[1]);
+
+    // Bind the texture to a uniform sampler in the fragment shader
+    GLint normalShapeUniform = glGetUniformLocation(program, "normalShape");
+    std::cout << "normal shape uniform location " << normalShapeUniform << std::endl;
+    glUniform1i(normalShapeUniform, 1); // Corrected line
 }
 
 void VoxelShape::loadMagica(const char* filepath)
 {
+    if (!std::filesystem::exists(filepath))
+    {
+        std::cerr << "Critical Error - " << filepath << " DNE" << std::endl;
+        return;
+    }
+
     auto start = std::chrono::high_resolution_clock::now();
 
     std::ifstream file(filepath, std::ios::binary | std::ios::ate);
@@ -227,10 +258,14 @@ void VoxelShape::save(const char* filepath) // to gpu
     std::cout << "\"" << filepath << "\" saved in " << duration.count() << " milliseconds" << std::endl;
 }
 
-
-
 void VoxelShape::load(const char* filepath)
 {
+    if (!std::filesystem::exists(filepath))
+    {
+        std::cerr << "Critical Error - " << filepath << " DNE" << std::endl;
+        return;
+    }
+
     auto start = std::chrono::high_resolution_clock::now();
 
     {

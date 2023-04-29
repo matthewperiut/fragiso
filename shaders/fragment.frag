@@ -3,6 +3,8 @@ out vec4 FragColor;
 
 // Adding multiple voxelShapes should be a priority
 uniform sampler3D voxelShape;
+uniform sampler3D normalShape;
+
 uniform vec3 voxelShapeSize;
 uniform vec3 voxelPosition;
 
@@ -36,31 +38,8 @@ bool anything(vec3 pos)
 
 vec3 getNormal(vec3 pos)
 {
-    int dist = 1;
-    vec3 otherBlocks = vec3(0.f,0.f,0.f);
-
-    otherBlocks.x = 1.f * float(int(nothing(pos+vec3(1.f,0.f,0.f))));// + -1.f * float(int(nothing(pos+vec3(-1.f,0.f,0.f))));
-    otherBlocks.y = 1.f * float(int(nothing(pos+vec3(0.f,1.f,0.f))));// + -1.f * float(int(nothing(pos+vec3(0.f,-1.f,0.f))));
-    otherBlocks.z = 1.f * float(int(nothing(pos+vec3(0.f,0.f,1.f))));// + -1.f * float(int(nothing(pos+vec3(0.f,0.f,-1.f))));
-
-    if (otherBlocks == vec3(0.f,0.f,0.f))
-    {
-        if (nothing(pos+vec3(1.f,1.f,0.f)))
-        {
-            otherBlocks = vec3(1.f,1.f,0.f);
-        }
-        else if (nothing(pos+vec3(0.f,1.f,1.f)))
-        {
-            otherBlocks = vec3(0.f,1.f,1.f);
-        }
-        else if (nothing(pos+vec3(1.f,0.f,1.f)))
-        {
-            otherBlocks = vec3(1.f,0.f,0.f);
-        }
-    }
-
-    vec3 away = otherBlocks;
-    return normalize(away);
+    vec3 normal = texture(normalShape, (pos + vec3(0,0,0.5))/voxelShapeSize).xyz;
+    return normalize(normal);
 }
 
 vec3 rayPosition;
@@ -101,7 +80,7 @@ void main()
                 }
             }
             //FragColor = vec4(normal, 1.f);
-            FragColor = color;// * lightIntensity;
+            FragColor = color * lightIntensity;
             return;
         }
     }

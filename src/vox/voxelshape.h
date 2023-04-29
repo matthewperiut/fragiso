@@ -15,6 +15,9 @@ struct Pixel {
 };
 
 class VoxelShape {
+private:
+    // gpu texture handle
+    unsigned int textureID = -1;
 public:
     VoxelShape() = default;
     VoxelShape(int xSize, int ySize, int zSize);
@@ -37,7 +40,7 @@ public:
     int index(int x, int y, int z) const;
 
     void loadMagica(const char* filepath);
-    void send(unsigned int program);
+    void send(unsigned int program, const char* name = "voxelShape");
 
     // png
     void save(const char* filepath);
