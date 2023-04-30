@@ -17,7 +17,7 @@ struct Pixel {
 class VoxelShape {
 private:
     // gpu texture handle
-    unsigned int textureID = -1;
+    unsigned int textureID[2];
 public:
     VoxelShape() = default;
     VoxelShape(int xSize, int ySize, int zSize);

@@ -3,44 +3,9 @@
 //
 
 #include <iostream>
+#include <chrono>
 #include "normal.h"
 #include "voxelshape.h"
-
-uint8_t packTwoBitValues(uint8_t value1, uint8_t value2, uint8_t value3)
-{
-    uint8_t packedValues = 0;
-
-    // Pack the values into the bits of the variable
-    packedValues |= (value1 & 0x3) << 6; // Put the first 2-bit value in the upper 2 bits
-    packedValues |= (value2 & 0x3) << 4; // Put the second 2-bit value in the middle 2 bits
-    packedValues |= (value3 & 0x3) << 2; // Put the third 2-bit value in the lower 2 bits
-
-    return packedValues;
-}
-
-/*
-bool nothing(vec3 pos)
-{
-    return getColor(pos) == blank;
-}
-bool anything(vec3 pos)
-{
-    return !nothing(pos);
-}
-
-vec3 getNormal(vec3 pos)
-{
-    int dist = 1;
-    vec3 otherBlocks = vec3(0.f,0.f,0.f);
-
-    otherBlocks.x = 1.f * float(int(nothing(1.f,0.f,0.f)))) + -1.f * float(int(nothing(-1.f,0.f,0.f))));
-    otherBlocks.y = 1.f * float(int(nothing(0.f,1.f,0.f)))) + -1.f * float(int(nothing(0.f,-1.f,0.f))));
-    otherBlocks.z = 1.f * float(int(nothing(0.f,0.f,1.f)))) + -1.f * float(int(nothing(0.f,0.f,-1.f))));
-
-    vec3 away = otherBlocks;
-    return normalize(away);
-}
- */
 
 VoxelShape calculateNormals(VoxelShape& vox)
 {

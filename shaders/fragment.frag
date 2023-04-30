@@ -14,26 +14,15 @@ uniform float time;
 
 const vec4 blank = vec4(0.f,0.f,0.f,0.f);
 vec4 color = blank;
+
 vec4 getColor(vec3 texCoords)
 {
-    if (texCoords.x > voxelShapeSize.x || texCoords.y > voxelShapeSize.y || texCoords.z > voxelShapeSize.z)
-    {
-        if (texCoords.x < 0 || texCoords.y < 0 || texCoords.z < 0)
-        {
-            return blank;
-        }
-    }
-
     return texture(voxelShape, (texCoords + vec3(0,0,0.5))/voxelShapeSize);
 }
 
-bool nothing(vec3 pos)
-{
-    return getColor(pos) == blank;
-}
 bool anything(vec3 pos)
 {
-    return !nothing(pos);
+    return getColor(pos) != blank;
 }
 
 vec3 getNormal(vec3 pos)
@@ -43,6 +32,7 @@ vec3 getNormal(vec3 pos)
 }
 
 vec3 rayPosition;
+
 void main()
 {
     vec2 coord = gl_FragCoord.xy - cameraPosition;
@@ -70,7 +60,7 @@ void main()
             float lowestLight = 0.5f;
             float lightIntensity = max(dot(normal, -lightDir), lowestLight);
 
-            while (rayPosition.y < 200)
+            while (rayPosition.y < voxelShapeSize.y)
             {
                 rayPosition -= noLight;
                 if (anything(rayPosition))
@@ -79,14 +69,14 @@ void main()
                     break;
                 }
             }
-            //FragColor = vec4(normal, 1.f);
+
             FragColor = color * lightIntensity;
             return;
         }
     }
 
     if (steps > 48)
-    discard;
+        discard;
     if (color == blank)
-    discard;
+        discard;
 }

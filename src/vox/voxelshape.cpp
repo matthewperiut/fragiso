@@ -104,13 +104,10 @@ VoxelShape calculateNormals(VoxelShape& vox);
 void VoxelShape::send(unsigned int program, const char* uniformName) // to gpu
 {
     sendUniform3fSafely(program, "voxelShapeSize", xSize, ySize, zSize);
+    glGenTextures(2, textureID);
 
     // Create the 3D texture
-    GLuint textureID[2];
-    glGenTextures(2, textureID);
     glBindTexture(GL_TEXTURE_3D, textureID[0]);
-
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, xSize, ySize, zSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.get());
 
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -118,35 +115,34 @@ void VoxelShape::send(unsigned int program, const char* uniformName) // to gpu
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
 
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_3D, textureID[0]);
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, xSize, ySize, zSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.get());
 
-    // Bind the texture to a uniform sampler in the fragment shader
-    GLint voxelShapeUniform = glGetUniformLocation(program, "voxelShape");
-    std::cout << "voxel shape uniform location " << voxelShapeUniform << std::endl;
-    glUniform1i(voxelShapeUniform, 0);
-
-
-    // normal
+    // Create the normal
     VoxelShape normal = calculateNormals(*this);
 
     glBindTexture(GL_TEXTURE_3D, textureID[1]);
 
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, xSize, ySize, zSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, normal.data.get());
-
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
 
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA, xSize, ySize, zSize, 0, GL_RGBA, GL_UNSIGNED_BYTE, normal.data.get());
+
+    // Activate textures
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_3D, textureID[0]);
+
     glActiveTexture(GL_TEXTURE1);
     glBindTexture(GL_TEXTURE_3D, textureID[1]);
 
-    // Bind the texture to a uniform sampler in the fragment shader
+    // Find Uniforms
+    GLint voxelShapeUniform = glGetUniformLocation(program, "voxelShape");
     GLint normalShapeUniform = glGetUniformLocation(program, "normalShape");
-    std::cout << "normal shape uniform location " << normalShapeUniform << std::endl;
-    glUniform1i(normalShapeUniform, 1); // Corrected line
+
+    glUniform1i(voxelShapeUniform, 0);
+    glUniform1i(normalShapeUniform, 1);
 }
 
 void VoxelShape::loadMagica(const char* filepath)
