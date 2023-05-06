@@ -54,6 +54,23 @@ void GLAPIENTRY openglCallbackFunction(GLenum source, GLenum type, GLuint id, GL
     std::cout << "---------------------opengl-callback-end--------------" << std::endl;
 }
 
+
+void sendUniform4fSafely(GLuint program, std::string name, float r, float g, float b, float a)
+{
+    glUseProgram(program);
+    GLuint location = glGetUniformLocation(program, name.c_str());
+    if(location == -1)
+        std::cout << "Uniform " + name + " not found or not active" << std::endl;
+    else
+    {
+        glUniform4f(location, r, g, b, a);
+        GLenum error = glGetError();
+        if (error != GL_NO_ERROR) {
+            std::cout << "(" + name + ") Error: " << error << std::endl;
+        }
+    }
+}
+
 void sendUniform3fSafely(GLuint program, std::string name, float x, float y, float z)
 {
     glUseProgram(program);

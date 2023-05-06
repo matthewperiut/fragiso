@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <chrono>
+#include <glm/glm.hpp>
 #include "normal.h"
 #include "voxelshape.h"
 
@@ -23,37 +24,28 @@ VoxelShape calculateNormals(VoxelShape& vox)
             {
                 if (vox.anyPixel(x,y,z))
                 {
-                    obx = 1.f * !vox.anyPixel(x+1.f,y+0.f,z+0.f);// + -1.f * vox.anyPixel(x+1.f,y+0.f,z+0.f);
-                    oby = 1.f * !vox.anyPixel(x+0.f,y+1.f,z+0.f);// + -1.f * vox.anyPixel(x+0.f,y+1.f,z+0.f);
-                    obz = 1.f * !vox.anyPixel(x+0.f,y+0.f,z+1.f);// + -1.f * vox.anyPixel(x+0.f,y+0.f,z+1.f);
+                    glm::vec3 pos{ x,y,z };
+                    glm::vec3 res{ 0, 0, 0 };
 
-                    if (obx + oby + obz == 0)
+                    for (int i = -1; i < 2; i++)
                     {
-                        if (!vox.anyPixel(x+1.f,y+1.f,z+0.f))
+                        for (int j = -1; j < 2; j++)
                         {
-                            //otherBlocks = vec3(1.f,1.f,0.f);
-                            obx = 1.f;
-                            oby = 1.f;
-                        }
-                        else if (!vox.anyPixel(x+0.f,y+1.f,z+1.f))
-                        {
-                            //otherBlocks = vec3(0.f,1.f,1.f);
-                            oby = 1.f;
-                            obz = 1.f;
-                        }
-                        else if (!vox.anyPixel(x+1.f,y+0.f,z+1.f))
-                        {
-                            obx = 1.f;
-                        }
-                        else if (!vox.anyPixel(x+1.f,y+1.f,z+1.f))
-                        {
-                            obx = 1.f;
-                            oby = 1.f;
-                            obz = 1.f;
+                            for (int k = -1; k < 2; k++)
+                            {
+                                if (!vox.anyPixel(pos.x+i, pos.y+j, pos.z+k))
+                                {
+                                    if (i == 0 || j == 0 || k == 0)
+                                        res += glm::vec3(i,j,k);
+                                }
+                            }
                         }
                     }
 
-                    result.setPixel(x,y,z,Pixel(obx*255,oby*255,obz*255));
+                    res = glm::normalize(res);
+
+                    result.setPixel(pos.x,pos.y,pos.z,Pixel((res.x*127.5)+127.5,(res.y*127.5)+127.5,(res.z*127.5)+127.5));
+
                 }
 
             }

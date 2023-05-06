@@ -8,6 +8,8 @@ uniform sampler3D normalShape;
 uniform vec3 voxelShapeSize;
 uniform vec3 voxelPosition;
 
+uniform vec4 crop;
+
 uniform vec2 cameraPosition;
 
 uniform float time;
@@ -28,7 +30,7 @@ bool anything(vec3 pos)
 vec3 getNormal(vec3 pos)
 {
     vec3 normal = texture(normalShape, (pos + vec3(0,0,0.5))/voxelShapeSize).xyz;
-    return normalize(normal);
+    return normal*2-1;
 }
 
 vec3 rayPosition;
@@ -36,6 +38,18 @@ vec3 rayPosition;
 void main()
 {
     vec2 coord = gl_FragCoord.xy - cameraPosition;
+
+    if (coord.x > crop.r - 1 && coord.x < crop.r + 1)
+    {
+        FragColor = vec4(1.f,0.f,0.f,1.f);
+        return;
+    }
+
+    if (coord.y > crop.g - 1 && coord.y < crop.g + 1)
+    {
+        FragColor = vec4(0.f,1.f,0.f,1.f);
+        return;
+    }
 
     rayPosition = vec3(coord,200);
     rayPosition = vec3(rayPosition.x - int(coord/2), rayPosition.y, rayPosition.z- int(coord/2));
@@ -71,6 +85,7 @@ void main()
             }
 
             FragColor = color * lightIntensity;
+            //FragColor = vec4(normal, 1.f);
             return;
         }
     }

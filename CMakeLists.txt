@@ -14,6 +14,9 @@ target_link_libraries(fragiso PRIVATE GLEW::GLEW)
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(fragiso PRIVATE glfw)
 
+find_package(glm CONFIG REQUIRED)
+target_link_libraries(fragiso PRIVATE glm::glm)
+
 add_custom_command(
         TARGET fragiso
         PRE_BUILD COMMAND ${CMAKE_COMMAND} -E

@@ -53,7 +53,7 @@ void VoxelShape::create(int xSize, int ySize, int zSize)
 
     data = std::make_unique<Pixel[]>(xSize * ySize * zSize);
     for (int i = 0; i < xSize * ySize * zSize; ++i) {
-        data[i] = Pixel{0, 0, 0, 0 };
+        data[i] = Pixel{ 0, 0, 0, 0 };
     }
 }
 
@@ -86,7 +86,11 @@ bool VoxelShape::anyPixel(int x, int y, int z) const
 
     // Seems to be faster?
     Pixel p = getPixel(x,y,z);
-    return (p.r + p.g + p.b + p.a != 0);
+
+    if (x < xSize && y < ySize && z < zSize && x > -1 && y > -1 && z > -1)
+        return (p.r + p.g + p.b + p.a != 0);
+    else
+        return false;
 }
 
 void VoxelShape::setAlpha(int x, int y, int z, uint8_t alpha) const
@@ -96,6 +100,7 @@ void VoxelShape::setAlpha(int x, int y, int z, uint8_t alpha) const
 
 
 // external needed
+void sendUniform4fSafely(GLuint program, std::string name, float r, float g, float b, float a);
 void sendUniform3fSafely(GLuint program, std::string name, float x, float y, float z);
 void sendUniform1fSafely(GLuint program, std::string name, float t);
 
@@ -105,6 +110,14 @@ void VoxelShape::send(unsigned int program, const char* uniformName) // to gpu
 {
     sendUniform3fSafely(program, "voxelShapeSize", xSize, ySize, zSize);
     glGenTextures(2, textureID);
+
+    float top;
+    float left;
+
+    float bottom;
+    float right;
+
+    sendUniform4fSafely(program, "crop", 0, 0, 0, 0);
 
     // Create the 3D texture
     glBindTexture(GL_TEXTURE_3D, textureID[0]);
