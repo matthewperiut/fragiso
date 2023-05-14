@@ -64,12 +64,20 @@ int VoxelShape::index(int x, int y, int z) const
 
 void VoxelShape::setPixel(int x, int y, int z, Pixel pixel) const
 {
-    data[index(x, y, z)] = pixel;
+    if (x < xSize-1 && y < ySize-1 && z < zSize-1 && x >= 0 && y >= 0 && z >= 0)
+        data[index(x, y, z)] = pixel;
 }
 
 Pixel VoxelShape::getPixel(int x, int y, int z) const
 {
-    return data[index(x, y, z)];
+    if (x < xSize-1 && y < ySize-1 && z < zSize-1 && x >= 0 && y >= 0 && z >= 0)
+    {
+        return data[index(x, y, z)];
+    }
+    else
+    {
+        return Pixel{0,0,0,0};
+    }
 }
 
 bool VoxelShape::colorPixelComp(int x, int y, int z, int value) const
@@ -80,22 +88,14 @@ bool VoxelShape::colorPixelComp(int x, int y, int z, int value) const
 
 bool VoxelShape::anyPixel(int x, int y, int z) const
 {
-    /*
-    static const Pixel zeroPixel = Pixel(0, 0, 0, 255);
-    return memcmp(&data[index(x,y,z)], &zeroPixel, sizeof(Pixel) - 1) != 0;*/
-
-    // Seems to be faster?
-    Pixel p = getPixel(x,y,z);
-
-    if (x < xSize && y < ySize && z < zSize && x > -1 && y > -1 && z > -1)
-        return (p.r + p.g + p.b + p.a != 0);
-    else
-        return false;
+    Pixel p = getPixel(x, y, z);
+    return (p.r + p.g + p.b + p.a != 0);
 }
 
 void VoxelShape::setAlpha(int x, int y, int z, uint8_t alpha) const
 {
-    data[index(x,y,z)].a = alpha;
+    if (x < xSize-1 && y < ySize-1 && z < zSize-1 && x >= 0 && y >= 0 && z >= 0)
+        data[index(x,y,z)].a = alpha;
 }
 
 
