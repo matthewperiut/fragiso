@@ -33,7 +33,7 @@ public:
     bool scale = true;
     framebuffer fbo;
 
-    std::string shape_name = "vox/mc.png";
+    std::string shape_name = "vox/monu1.png";
     VoxelShape shape = VoxelShape(shape_name.c_str());
 
 

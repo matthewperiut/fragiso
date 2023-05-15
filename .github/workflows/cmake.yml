@@ -1,0 +1,57 @@
+name: CMake Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macOS-latest]
+        include:
+          - os: ubuntu-latest
+            dependencies: sudo dnf install cmake ninja-build gcc-c++ glfw-devel glew-devel glm-devel -y
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up environment (Fedora)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          echo "Dependencies: ${{ matrix.dependencies }}"
+          sudo apt-get update
+          sudo apt-get install -y ninja-build gcc g++ libglfw3-dev libglew-dev libglm-dev
+
+      - name: Set up environment (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          choco install cmake ninja
+          choco install glfw3
+          choco install glew
+          choco install glm
+
+      - name: Set up environment (macOS)
+        if: matrix.os == 'macOS-latest'
+        run: |
+          xcode-select --install
+          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          brew install cmake ninja
+          brew install glfw3 glew glm
+
+      - name: Create build directory
+        run: mkdir build
+
+      - name: Run CMake
+        working-directory: build
+        run: cmake -G Ninja ..
+
+      - name: Build
+        working-directory: build
+        run: ninja
