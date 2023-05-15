@@ -13,45 +13,38 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macOS-latest]
-        include:
-          - os: ubuntu-latest
-            dependencies: sudo dnf install cmake ninja-build gcc-c++ glfw-devel glew-devel glm-devel -y
+        os: [ubuntu-latest, macOS-latest]
 
     steps:
-      - name: Check out repository
+      - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up environment (Fedora)
-        if: matrix.os == 'ubuntu-latest'
+      - name: Install dependencies
         run: |
-          echo "Dependencies: ${{ matrix.dependencies }}"
-          sudo apt-get update
-          sudo apt-get install -y ninja-build gcc g++ libglfw3-dev libglew-dev libglm-dev
+          if [ "${{ runner.os }}" == "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install -y libglew-dev libglfw3-dev libglm-dev
+          elif [ "${{ runner.os }}" == "macOS" ]; then
+            brew install glew glfw glm
+          fi
+        shell: bash
 
-      - name: Set up environment (Windows)
-        if: matrix.os == 'windows-latest'
+      - name: Create Build Environment
+        run: cmake -E make_directory ${{runner.workspace}}/build
+        shell: bash
+
+      - name: Configure CMake
         run: |
-          choco install cmake ninja
-          choco install glfw3
-          choco install glew
-          choco install glm
-
-      - name: Set up environment (macOS)
-        if: matrix.os == 'macOS-latest'
-        run: |
-          xcode-select --install
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          brew install cmake ninja
-          brew install glfw3 glew glm
-
-      - name: Create build directory
-        run: mkdir build
-
-      - name: Run CMake
-        working-directory: build
-        run: cmake -G Ninja ..
+          cmake -S ${{github.workspace}} -B ${{runner.workspace}}/build \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DBUILD_SHARED_LIBS=OFF
+        shell: bash
 
       - name: Build
-        working-directory: build
-        run: ninja
+        run: cmake --build ${{runner.workspace}}/build --config Release -j 2
+        shell: bash
+
+      - name: Test
+        working-directory: ${{runner.workspace}}/build
+        run: ctest -C Release
+        shell: bash
