@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <sstream>
+#include <cstdint>
 
 void append_text_to_file(const std::string& filename, const std::string& text) {
     std::ofstream output(filename, std::ios::binary | std::ios::app);

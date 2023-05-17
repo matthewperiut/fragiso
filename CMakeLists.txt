@@ -26,7 +26,7 @@ project(fragiso)
 # 2. cmake -G Ninja ..
 # 3. ninja
 
-file(GLOB MY_SRC "src/*" "src/lower/*" "src/vox/*" "src/png/*")
+file(GLOB MY_SRC "src/*" "src/lower/*" "src/vox/*" "src/png/*" "src/game/*")
 add_executable(fragiso ${MY_SRC})
 
 find_package(OpenGL REQUIRED)
