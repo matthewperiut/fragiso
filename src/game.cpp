@@ -2,6 +2,8 @@
 #include "lower/boilerplate.h"
 #include <chrono>
 #include <iostream>
+#include "game/camera.h"
+#include "lower/helpful.h"
 
 extern Game game;
 
@@ -56,6 +58,9 @@ void Game::init()
     }
 
     glfwSetWindowSizeCallback(window, windowSizeCallback);
+    glfwSetCursorPosCallback(window, MouseCallback);
+
+    sendUniform2fSafely(pixel_program, "resolution", float(current_width), float(current_height));
 }
 
 void Game::loop()
@@ -66,12 +71,13 @@ void Game::loop()
     {
         auto now = std::chrono::high_resolution_clock::now();
 
-        processCamera();
         render();
 
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         sendUniform1fSafely(pixel_program, "time", ((float)duration.count()/1000.f));
+        ProcessInput(window);
+        Send2DCamera(pixel_program);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -101,39 +107,4 @@ void Game::render() {
     }
 
     glBindVertexArray(0);
-}
-
-void Game::processCamera()
-{
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    {
-        camera.y -= 1;
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    {
-        camera.y += 1;
-    }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    {
-        camera.x += 1;
-    }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    {
-        camera.x -= 1;
-    }
-
-    glUseProgram(pixel_program);
-    GLuint location = glGetUniformLocation(pixel_program, "cameraPosition");
-
-    if(location == -1)
-        std::cout << "cameraPosition not found in shader" << std::endl;
-    else
-    {
-        glUniform2f(location, camera.x, camera.y);
-        GLenum error = glGetError();
-        if (error != GL_NO_ERROR) {
-            std::cout << "(cameraPosition) Error: " << error << std::endl;
-        }
-    }
-
 }

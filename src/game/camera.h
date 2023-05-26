@@ -5,4 +5,6 @@
 void UpdateRayDirection();
 void ProcessInput(GLFWwindow* window);
 void MouseCallback(GLFWwindow* window, double xpos, double ypos);
-void SendCamera(unsigned int program);
+void SendFPSCamera(unsigned int program);
+void SendOrthoCamera(unsigned int program);
+void Send2DCamera(unsigned int program);

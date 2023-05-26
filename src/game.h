@@ -35,15 +35,4 @@ public:
 
     std::string shape_name = "vox/monu1.png";
     VoxelShape shape = VoxelShape(shape_name.c_str());
-
-
-    struct Camera
-    {
-        // We will forget about the decimal values until we implement the scale program which will implement decimal camera movement
-        double x, y;
-    };
-    Camera camera{ 77, 47 };
-    void processCamera();
-
-
 };

@@ -117,8 +117,6 @@ void VoxelShape::send(unsigned int program, const char* uniformName) // to gpu
     float bottom;
     float right;
 
-    sendUniform4fSafely(program, "crop", 0, 0, 0, 0);
-
     // Create the 3D texture
     glBindTexture(GL_TEXTURE_3D, textureID[0]);
 
