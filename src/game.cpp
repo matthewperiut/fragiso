@@ -44,7 +44,7 @@ void Game::init()
     screen_vao = generateQuadVAO();
 
     // Read and build the shader pixel_program
-    pixel_program = createShaderProgram("shaders/vertex.vert", "shaders/fragment.frag");
+    pixel_program = createShaderProgram("shaders/vertex.vert", "shaders/orthographic.frag");
 
     shape.send(pixel_program, "voxelShape");
 
@@ -77,7 +77,8 @@ void Game::loop()
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
         sendUniform1fSafely(pixel_program, "time", ((float)duration.count()/1000.f));
         ProcessInput(window);
-        Send2DCamera(pixel_program);
+        SendOrthoCamera(pixel_program);
+        //SendFPSCamera(pixel_program);
 
         glfwSwapBuffers(window);
         glfwPollEvents();

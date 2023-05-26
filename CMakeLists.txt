@@ -62,3 +62,8 @@ add_custom_command(
         TARGET fragiso
         PRE_BUILD COMMAND ${CMAKE_COMMAND} -E
         create_symlink ${CMAKE_CURRENT_SOURCE_DIR}/vox $<TARGET_FILE_DIR:fragiso>/vox)
+
+target_compile_definitions(fragiso PRIVATE
+        $<$<CONFIG:Debug>:DEBUG>
+        $<$<NOT:$<CONFIG:Debug>>:RELEASE>
+        )

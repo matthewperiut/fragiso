@@ -20,9 +20,9 @@ void UpdateRayDirection()
     cameraDirection.y = sin(glm::radians(cameraPitch));
     cameraDirection.z = sin(glm::radians(cameraYaw)) * cos(glm::radians(cameraPitch));
     cameraDirection = glm::normalize(cameraDirection);
-    std::cout << cameraDirection.x << " " << cameraDirection.y << " " << cameraDirection.z << std::endl;
 }
 
+static double lastX = 400.0f, lastY = 300.0f;
 void ProcessInput(GLFWwindow* window)
 {
     const float cameraSpeed = 0.05f;
@@ -60,6 +60,7 @@ void ProcessInput(GLFWwindow* window)
     else if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_RELEASE)
     {
         canmouse = true;
+        glfwGetCursorPos(window, &lastX, &lastY);
     }
 }
 
@@ -67,16 +68,6 @@ void MouseCallback(GLFWwindow* window, double xpos, double ypos)
 {
     if (!mouse)
         return;
-
-    static float lastX = 400.0f, lastY = 300.0f;
-    static bool firstMouse = true;
-
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
 
     float xoffset = xpos - lastX;
     float yoffset = lastY - ypos;
@@ -113,8 +104,8 @@ void SendFPSCamera(unsigned int shaderProgram)
     sendUniform1fSafely(shaderProgram, "zoom", 1);
 }
 
-glm::vec3 centerPoint = glm::vec3(0);
-float cameraDistance = 5;
+glm::vec3 centerPoint = glm::vec3(0,0,0);
+float cameraDistance = 3;
 void SendOrthoCamera(unsigned int shaderProgram)
 {
     // Get the location of the viewMatrix uniform in the shader program
@@ -136,7 +127,7 @@ void SendOrthoCamera(unsigned int shaderProgram)
     glUseProgram(shaderProgram);
     glUniformMatrix4fv(viewMatrixLocation, 1, GL_FALSE, glm::value_ptr(viewMatrix));
 
-    sendUniform1fSafely(shaderProgram, "zoom", 3);
+    sendUniform1fSafely(shaderProgram, "zoom", 0.25);
 }
 
 void Send2DCamera(unsigned int shaderProgram)

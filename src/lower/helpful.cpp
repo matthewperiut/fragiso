@@ -54,13 +54,35 @@ void GLAPIENTRY openglCallbackFunction(GLenum source, GLenum type, GLuint id, GL
     std::cout << "---------------------opengl-callback-end--------------" << std::endl;
 }
 
+#ifdef DEBUG
+    #include <algorithm>
+    std::vector<std::string> not_found;
+    bool containsString(const std::vector<std::string>& strings, const std::string& searchString)
+    {
+        return std::find(strings.begin(), strings.end(), searchString) != strings.end();
+    }
+#endif
 
 void sendUniform4fSafely(GLuint program, std::string name, float r, float g, float b, float a)
 {
+
+
     glUseProgram(program);
     GLuint location = glGetUniformLocation(program, name.c_str());
     if(location == -1)
+    {
+#ifdef DEBUG
+        if (containsString(not_found, name))
+        {
+            return;
+        }
+        else
+        {
+            not_found.emplace_back(name);
+        }
+#endif
         std::cout << "Uniform " + name + " not found or not active" << std::endl;
+    }
     else
     {
         glUniform4f(location, r, g, b, a);
@@ -76,7 +98,19 @@ void sendUniform3fSafely(GLuint program, std::string name, float x, float y, flo
     glUseProgram(program);
     GLuint location = glGetUniformLocation(program, name.c_str());
     if(location == -1)
+    {
+#ifdef DEBUG
+        if (containsString(not_found, name))
+        {
+            return;
+        }
+        else
+        {
+            not_found.emplace_back(name);
+        }
+#endif
         std::cout << "Uniform " + name + " not found or not active" << std::endl;
+    }
     else
     {
         glUniform3f(location, x, y, z);
@@ -92,7 +126,19 @@ void sendUniform2fSafely(GLuint program, std::string name, float x, float y)
     glUseProgram(program);
     GLuint location = glGetUniformLocation(program, name.c_str());
     if(location == -1)
+    {
+#ifdef DEBUG
+        if (containsString(not_found, name))
+        {
+            return;
+        }
+        else
+        {
+            not_found.emplace_back(name);
+        }
+#endif
         std::cout << "Uniform " + name + " not found or not active" << std::endl;
+    }
     else
     {
         glUniform2f(location, x, y);
@@ -108,7 +154,19 @@ void sendUniform1fSafely(GLuint program, std::string name, float t)
     glUseProgram(program);
     GLuint location = glGetUniformLocation(program, name.c_str());
     if(location == -1)
+    {
+#ifdef DEBUG
+        if (containsString(not_found, name))
+        {
+            return;
+        }
+        else
+        {
+            not_found.emplace_back(name);
+        }
+#endif
         std::cout << "Uniform " + name + " not found or not active" << std::endl;
+    }
     else
     {
         glUniform1f(location, t);
