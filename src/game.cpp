@@ -44,7 +44,7 @@ void Game::init()
     screen_vao = generateQuadVAO();
 
     // Read and build the shader pixel_program
-    pixel_program = createShaderProgram("shaders/vertex.vert", "shaders/orthographic.frag");
+    pixel_program = createShaderProgram("shaders/vertex.vert", "shaders/fragment.frag");
 
     shape.send(pixel_program, "voxelShape");
 

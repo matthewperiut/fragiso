@@ -41,7 +41,7 @@ void main()
     rayPosition = vec3(rayPosition.x - int(coord/2), rayPosition.y, rayPosition.z- int(coord/2));
 
     float radius = 1;
-    vec3 noLight = vec3(-(radius * cos(time)), -1, -(radius * sin(time)));
+    vec3 noLight = vec3(-(radius * abs(cos(time))), -1, -(radius * abs(sin(time))));
     vec3 lightDir = normalize(noLight);
 
     int steps = 0;
