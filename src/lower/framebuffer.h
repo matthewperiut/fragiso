@@ -10,5 +10,5 @@ struct framebuffer
     framebuffer();
     framebuffer(int width, int height);
     void create(int width, int height);
-    void regen();
+    void regen(int width, int height);
 };

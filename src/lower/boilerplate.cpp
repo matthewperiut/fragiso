@@ -3,14 +3,27 @@
 //
 
 #include "boilerplate.h"
+#include "helpful.h"
+#include "../game.h"
+#include "../game/camera.h"
 
 #include <vector>
 #include <iostream>
 #include <fstream>
+#include <chrono>
 
 extern const GLuint WIDTH = 1280, HEIGHT = 720;
 
-GLFWwindow* initWindow(std::string title, int width, int height, bool vsync)
+extern Game game;
+
+void windowSizeCallback(GLFWwindow* window, int width, int height)
+{
+    game.width = width;
+    game.height = height;
+    game.fbo.regen(width, height);
+}
+
+GLFWwindow* initWindow(std::string title, int width, int height, bool vsync, bool resize)
 {
     if (!glfwInit())
     {
@@ -21,7 +34,7 @@ GLFWwindow* initWindow(std::string title, int width, int height, bool vsync)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, resize);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
     glfwWindowHint(GLFW_COCOA_RETINA_FRAMEBUFFER, GLFW_FALSE);
     glfwSwapInterval(vsync);
@@ -44,6 +57,12 @@ GLFWwindow* initWindow(std::string title, int width, int height, bool vsync)
     }
 
     glViewport(0, 0, width, height);
+
+    glfwSetWindowSizeCallback(window, windowSizeCallback);
+    glfwSetCursorPosCallback(window, MouseCallback);
+
+    // debug clear color
+    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 
     return window;
 }
@@ -170,4 +189,12 @@ GLuint generateQuadVAO()
     glBindVertexArray(0);
 
     return VAO;
+}
+
+void updateTimeUniform(GLuint program)
+{
+    static auto start = std::chrono::high_resolution_clock::now();
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    sendUniform1fSafely(program, "time", ((float)duration.count()/1000.f));
 }

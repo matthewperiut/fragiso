@@ -46,9 +46,11 @@ void framebuffer::create(int width, int height)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-
-void framebuffer::regen()
+void framebuffer::regen(int width, int height)
 {
+    this->width = width;
+    this->height = height;
+
     glBindFramebuffer(GL_FRAMEBUFFER, handle);
 
     // Delete previous texture
