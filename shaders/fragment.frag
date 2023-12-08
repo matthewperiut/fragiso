@@ -38,7 +38,7 @@ void main()
     vec2 coord = gl_FragCoord.xy - cameraPosition;
 
     rayPosition = vec3(coord,200);
-    rayPosition = vec3(rayPosition.x - int(coord/2), rayPosition.y, rayPosition.z- int(coord/2));
+    rayPosition = vec3(rayPosition.x - int(coord.x/2), rayPosition.y, rayPosition.z- int(coord.x/2));
 
     float radius = 1;
     vec3 noLight = vec3(-(radius * abs(cos(time))), -1, -(radius * abs(sin(time))));
